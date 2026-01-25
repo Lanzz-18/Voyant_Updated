@@ -6,81 +6,104 @@ import 'package:rxdart/rxdart.dart';
 import 'package:user_repository/user_repository.dart';
 
 class FirebaseUserRepo implements UserRepository {
-
   final FirebaseAuth _firebaseAuth;
-  final usersCollection = FirebaseFirestore.instance.collection('users');
+  final FirebaseFirestore _firestore;
+
+  // Users collection reference
+  late final CollectionReference<Map<String, dynamic>> usersCollection;
 
   FirebaseUserRepo({
     FirebaseAuth? firebaseAuth,
-    }) : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
+    FirebaseFirestore? firestore,
+  })  : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
+        _firestore = firestore ?? FirebaseFirestore.instance {
+    usersCollection = _firestore.collection('users');
+  }
 
-
-    @override
-      // TODO: implement user
-      Stream<MyUser> get user {
-        return _firebaseAuth.authStateChanges().flatMap((firebaseUser) async* {
-          if(firebaseUser == null){
-            yield MyUser.empty;
+  /// Real-time user stream
+  @override
+  Stream<MyUser> get user {
+    return _firebaseAuth.authStateChanges().switchMap((firebaseUser) {
+      if (firebaseUser == null) {
+        // No user logged in
+        return Stream.value(MyUser.empty);
+      } else {
+        // Stream Firestore document in real-time
+        return usersCollection
+            .doc(firebaseUser.uid)
+            .snapshots()
+            .map((doc) {
+          if (doc.exists && doc.data() != null) {
+            return MyUser.fromEntity(MyUserEntity.fromDocument(doc.data()!));
           } else {
-            yield await usersCollection
-              .doc(firebaseUser.uid)
-              .get()
-              .then((value) => MyUser.fromEntity(MyUserEntity.fromDocument(value.data()!)));
+            // Document doesn't exist yet
+            return MyUser.empty;
           }
+        }).handleError((error) {
+          log("Firestore stream error: $error");
+          return MyUser.empty;
         });
       }
+    });
+  }
 
-
-    @override
-    Future<void> signIn(String email, String password) async {
-      try {
-        await _firebaseAuth.signInWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
-      } catch (e) {
-        log(e.toString());
-        rethrow;
-      }
+  /// Sign in existing user
+  @override
+  Future<void> signIn(String email, String password) async {
+    try {
+      await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } catch (e) {
+      log("SignIn Error: $e");
+      rethrow;
     }
-    
-    @override
-    Future<MyUser> signUp(MyUser myUser, String password) async {
-     try {
-        UserCredential user = await _firebaseAuth.createUserWithEmailAndPassword(
-          email: myUser.email,
-          password: password,
-        );
+  }
 
-        myUser.userId = user.user!.uid;
-        return myUser;
-      } catch (e) {
-        log(e.toString());
-        rethrow;
-      }
-      }  
-      
-    
-      @override
-      Future<void> logOut() async {
-    // TODO: implement logOut
-        await _firebaseAuth.signOut();
-      }
-    
-      @override
-      Future<void> setUserData(MyUser myUser) async {
-        try {
-          await usersCollection
+  /// Sign up new user and save to Firestore
+  @override
+  Future<MyUser> signUp(MyUser myUser, String password) async {
+    try {
+      UserCredential userCredential =
+          await _firebaseAuth.createUserWithEmailAndPassword(
+        email: myUser.email,
+        password: password,
+      );
+
+      myUser.userId = userCredential.user!.uid;
+
+      // Save the user immediately to Firestore
+      await setUserData(myUser);
+
+      return myUser;
+    } catch (e) {
+      log("SignUp Error: $e");
+      rethrow;
+    }
+  }
+
+  /// Log out the current user
+  @override
+  Future<void> logOut() async {
+    try {
+      await _firebaseAuth.signOut();
+    } catch (e) {
+      log("Logout Error: $e");
+      rethrow;
+    }
+  }
+
+  /// Set or update user data in Firestore
+  @override
+  Future<void> setUserData(MyUser myUser) async {
+    try {
+      await usersCollection
           .doc(myUser.userId)
-          .set(myUser.toEntity().toDocument());
-        } catch (e) {
-          log(e.toString());
-          rethrow;
-        }
-      }
-    
-     
-    
-      
-
+          .set(myUser.toEntity().toDocument(), SetOptions(merge: true));
+    } catch (e) {
+      log("SetUserData Error: $e");
+      rethrow;
+    }
+  }
 }
