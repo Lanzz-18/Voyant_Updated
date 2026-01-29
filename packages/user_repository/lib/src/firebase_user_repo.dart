@@ -1,7 +1,6 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:user_repository/user_repository.dart';
 
@@ -40,7 +39,7 @@ class FirebaseUserRepo implements UserRepository {
             return MyUser.empty;
           }
         }).handleError((error) {
-          log("Firestore stream error: $error");
+          debugPrint("⚠️ Firestore stream error: $error");
           return MyUser.empty;
         });
       }
@@ -56,7 +55,7 @@ class FirebaseUserRepo implements UserRepository {
         password: password,
       );
     } catch (e) {
-      log("SignIn Error: $e");
+      debugPrint("❌ SignIn Error: $e");
       rethrow;
     }
   }
@@ -65,8 +64,7 @@ class FirebaseUserRepo implements UserRepository {
   @override
   Future<MyUser> signUp(MyUser myUser, String password) async {
     try {
-      UserCredential userCredential =
-          await _firebaseAuth.createUserWithEmailAndPassword(
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: myUser.email,
         password: password,
       );
@@ -78,7 +76,7 @@ class FirebaseUserRepo implements UserRepository {
 
       return myUser;
     } catch (e) {
-      log("SignUp Error: $e");
+      debugPrint("❌ SignUp Error: $e");
       rethrow;
     }
   }
@@ -89,7 +87,7 @@ class FirebaseUserRepo implements UserRepository {
     try {
       await _firebaseAuth.signOut();
     } catch (e) {
-      log("Logout Error: $e");
+      debugPrint("❌ Logout Error: $e");
       rethrow;
     }
   }
@@ -98,15 +96,16 @@ class FirebaseUserRepo implements UserRepository {
   @override
   Future<void> setUserData(MyUser myUser) async {
     try {
-      log("setUserData: Writing user document for UID: ${myUser.userId}");
-      log("setUserData: User data: ${myUser.toEntity().toDocument()}");
+      debugPrint("📝 setUserData: Writing user document for UID: ${myUser.userId}");
+      debugPrint("📝 setUserData: User data: ${myUser.toEntity().toDocument()}");
       await usersCollection
           .doc(myUser.userId)
           .set(myUser.toEntity().toDocument(), SetOptions(merge: true));
-      log("setUserData: Successfully wrote document to Firestore");
-    } catch (e) {
-      log("SetUserData Error: $e");
-      log("SetUserData Error Type: ${e.runtimeType}");
+      debugPrint("✅ setUserData: Successfully wrote document to Firestore");
+    } catch (e, stackTrace) {
+      debugPrint("❌ SetUserData Error: $e");
+      debugPrint("❌ SetUserData Error Type: ${e.runtimeType}");
+      debugPrint("❌ SetUserData StackTrace: $stackTrace");
       rethrow;
     }
   }
