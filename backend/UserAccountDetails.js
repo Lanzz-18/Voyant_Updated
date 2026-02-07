@@ -1,7 +1,13 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  name: {
+  uid: {
+    type: String,
+    required: true,
+    unique: true, // Prevents duplicates
+    index: true   // Makes lookups super fast
+  },
+    name: {
     type: String,
     required: true,
     trim: true
@@ -9,7 +15,6 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
-    unique: true,
     lowercase: true,
     trim: true
   },
