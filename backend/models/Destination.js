@@ -1,6 +1,4 @@
-// Ignore this for now
 // Database schema for location
-
 const mongoose = require("mongoose");
 
 const databaseSchema = new mongoose.Schema({
