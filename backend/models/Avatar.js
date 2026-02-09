@@ -14,10 +14,14 @@ const userAvatarSchema = new mongoose.Schema({
     unique: true,
     index: true
   },
+  characterData: {
+    type: String,
+    default: [] // to be filled later
+  }
   // Array of cosmetic item names or IDs
   cosmetics: {
     type: [String],
-    default: []
+    default: [] // to be filled later
   },
 });
 
