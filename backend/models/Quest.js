@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const questSchema = new mongoose.schema({
-  qid: {
+  questId: {
     type: Number,
     required: true,
     unique: true,
@@ -43,7 +43,7 @@ const questSchema = new mongoose.schema({
   achievements: {
     type: String,
     required: [true, 'A quest must provide achievements or xp']
-} 
+  } 
 });
 
 const Quest = mongoose.model("Quest", questSchema);

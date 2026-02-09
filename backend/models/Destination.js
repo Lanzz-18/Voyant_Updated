@@ -1,7 +1,12 @@
 const mongoose = require("mongoose");
 
 // Database schema for location
-const databaseSchema = new mongoose.Schema({
+const locationSchema = new mongoose.Schema({
+  destinationId: {
+    type: Number,
+    required: true,
+    unique: true
+  }
   name: {
     type: String,
     required: [true, "A destination must have a name"],
@@ -35,6 +40,6 @@ const databaseSchema = new mongoose.Schema({
   },
 });
 
-const Destination = mongoose.model("Destination", databaseSchema);
+const Destination = mongoose.model("Destination", locationSchema);
 
 module.exports = Destination;

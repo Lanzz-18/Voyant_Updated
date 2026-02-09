@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const skillClassSchema = new mongoose.schema({
     classId: {
         type: Number,
-        required: true
+        required: true,
+        unique: true
     },
     name: {
         type: String,
@@ -11,7 +12,7 @@ const skillClassSchema = new mongoose.schema({
     },
     skillsArray: {
         type: String,
-        enum: ["skill1", "skill2", "skill3"],
+        enum: ["skill1", "skill2", "skill3"]
     }
 });
 
