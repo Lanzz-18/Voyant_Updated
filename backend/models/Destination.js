@@ -6,7 +6,7 @@ const locationSchema = new mongoose.Schema({
     type: Number,
     required: true,
     unique: true
-  }
+  },
   name: {
     type: String,
     required: [true, "A destination must have a name"],

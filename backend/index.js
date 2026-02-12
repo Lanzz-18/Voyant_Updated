@@ -1,10 +1,19 @@
+const express = require('express');
 const connectToDatabase = require('./db');
+const userAccountDetailsRoutes = require('./routes/userAccountDetailsRoutes');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use('/api/user-account-details', userAccountDetailsRoutes);
 
 async function startApp() {
-  const db = await connectToDatabase();
-  
-  // Creating a collection
-  const casesCollection = db.collection('test_collection');
+  await connectToDatabase();
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 }
 
 startApp();

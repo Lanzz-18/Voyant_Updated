@@ -1,15 +1,12 @@
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
 require('dotenv').config();
-
-const client = new MongoClient(process.env.MONGO_URI);
 
 async function connectToDatabase() {
   try {
-    await client.connect();
-    console.log("Connected successfully to Atlas");
-    return client.db(); 
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('MongoDB connected');
   } catch (err) {
-    console.error("Database connection failed:", err);
+    console.error('Database connection failed:', err);
     process.exit(1);
   }
 }
