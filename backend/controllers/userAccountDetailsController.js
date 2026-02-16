@@ -34,7 +34,7 @@ exports.updateUserAccountDetails = async (req, res) => {
     const doc = await UserAccountDetails.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
     if (!doc) return res.status(404).json({ message: "Not found" });
     return res.json(doc);
