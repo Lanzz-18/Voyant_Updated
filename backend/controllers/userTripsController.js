@@ -1,12 +1,12 @@
-const UserGroupData = require("../models/UserGroups.js");
+const UserTripData = require("../models/UserTrips.js");
 
 // Create group
-exports.createGroup = async (req, res) => {
+exports.createTrip = async (req, res) => {
   try {
-    const newUserGroup = await UserGroupData.create(req.body);
+    const newUserTrip = await UserTripData.create(req.body);
     res.status(201).json({
       status: "success",
-      data: { group: newUserGroup },
+      data: { trip: newUserTrip },
     });
   } catch (err) {
     res.status(400).json({
@@ -17,14 +17,13 @@ exports.createGroup = async (req, res) => {
 };
 
 // Get all groups
-exports.getAllGroups = async (req, res) => {
+exports.getAllTrips = async (req, res) => {
   try {
-    const groups = await UserGroupData.find({ active: { $ne: false } });
-
+    const userTrips = await UserTripData.find();
     res.status(200).json({
       status: "success",
-      results: groups.length,
-      data: { groups: groups },
+      results: userTrips.length,
+      data: { trips: userTrips },
     });
   } catch (err) {
     res.status(400).json({
@@ -35,19 +34,19 @@ exports.getAllGroups = async (req, res) => {
 };
 
 // Get single group by ID
-exports.getGroupById = async (req, res) => {
+exports.getTripById = async (req, res) => {
   try {
-    const userGroup = await UserGroupData.findById(req.params.id);
-    if (!userGroup) {
+    const userTrip = await UserTripData.findById(req.params.id);
+    if (!userTrip) {
       return res.status(404).json({
         status: "fail",
-        message: "User group not found",
+        message: "User trip not found",
       });
     }
 
     res.status(200).json({
       status: "success",
-      data: { userGroup },
+      data: { userTrip },
     });
   } catch (err) {
     res.status(400).json({
@@ -58,17 +57,17 @@ exports.getGroupById = async (req, res) => {
 };
 
 // Get user's groups - all the groups the user is in
-exports.getUserGroups = async (req, res) => {
+exports.getAllUserTrips = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const userGroups = await UserGroupData.find({
-      member_usernames: userId,
+    const userTrips = await UserTripData.find({
+      userId: userId,
     });
 
     res.status(200).json({
       status: "success",
-      results: userGroups.length,
-      data: { groups: userGroups },
+      results: userTrips.length,
+      data: { trips: userTrips },
     });
   } catch (err) {
     res.status(400).json({
