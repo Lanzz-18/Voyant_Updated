@@ -9,7 +9,7 @@ router
   .patch(avatarController.updateAvatar)
   .delete(avatarController.deleteAvatar);
 
-router.patch("/:id", avatarController.updateCosmetics);
+router.patch("/user/:userId", avatarController.updateCosmetics);
 
 router
   .route("/")
