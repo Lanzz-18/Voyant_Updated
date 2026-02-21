@@ -8,7 +8,5 @@ router
   .post(userGroupController.createGroup)
   .get(userGroupController.getAllGroups);
 
-router
-  .route("/")
-  .get(userGroupController.getGroupById)
-  .get(userGroupController.getUserGroups);
+router.get("/", userGroupController.getGroupById);
+router.get("/", userGroupController.getUserGroups);

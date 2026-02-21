@@ -1,15 +1,14 @@
 const express = require("express");
-const router = express.router;
+const router = express.Router();
 const avatarController = require("../controllers/avatarController");
 
 // Routes
 router
-  .route("/id:")
+  .route("/:id")
   .get(avatarController.getAvatar)
   .patch(avatarController.updateAvatar)
-  .patch(avatarController.updateCosmetics)
   .delete(avatarController.deleteAvatar);
-
+router.patch(avatarController.updateCosmetics);
 router
   .route("/")
   .post(avatarController.createAvatar)

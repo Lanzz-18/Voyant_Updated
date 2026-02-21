@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const userTripController = require("../controllers/userTripsController");
+const UserSkill = require("../models/UserSkills");
 
 // Routes
 router
@@ -8,7 +9,6 @@ router
   .post(userTripController.createTrip)
   .get(userTripController.getAllTrips);
 
-router
-  .route("/:id")
-  .get(userTripController.getTripById)
-  .get(userTripController.getAllUserTrips);
+router.get("/:id", userTripController.getTripById);
+
+router.get("/:id", userTripController.getAllUserTrips);
