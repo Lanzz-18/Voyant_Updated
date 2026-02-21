@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const skillClassSchema = new mongoose.schema({
+const skillClassSchema = new mongoose.Schema({
   classId: {
     type: Number,
     required: true,
@@ -11,8 +11,8 @@ const skillClassSchema = new mongoose.schema({
     trim: true,
   },
   skillsArray: {
-    type: String,
-    enum: ["skill1", "skill2", "skill3"],
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Skill'
   },
 });
 

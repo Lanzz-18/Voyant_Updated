@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const skillSchema = new mongoose.schema({
+const skillSchema = new mongoose.Schema ({
   skillId: {
     type: Number,
     required: true,

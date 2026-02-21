@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const questSchema = new mongoose.schema({
+const questSchema = new mongoose.Schema({
   questId: {
     type: Number,
     required: true,

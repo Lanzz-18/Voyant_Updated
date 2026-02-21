@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema({
     type: Number, 
     default: 0.0
   },
+  skillPoints: {
+    type: Number,
+    default: 0
+  },
   pfp: {
     type: String
   },

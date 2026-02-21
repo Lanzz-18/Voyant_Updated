@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const userTripSchema = new mongoose.schema({
+const userTripSchema = new mongoose.Schema({
   tripID: {
     type: Number,
     required: true,
