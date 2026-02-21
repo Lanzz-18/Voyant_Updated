@@ -31,9 +31,13 @@ const locationSchema = new mongoose.Schema({
       default: "Point",
       enum: ["Point"],
     },
-    coordinates: [Number],
-    required: true,
-    address: String,
+    coordinates: {
+      type: [Number],  // [longitude, latitude]
+      required: true,
+    }
+  },
+  address: {
+    type: String,
   },
   rating: {
     type: Number,

@@ -11,7 +11,7 @@ const skillClassSchema = new mongoose.Schema({
     trim: true,
   },
   skillsArray: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: [mongoose.Schema.Types.ObjectId],
     ref: 'Skill'
   },
 });

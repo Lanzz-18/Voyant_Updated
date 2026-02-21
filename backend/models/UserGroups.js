@@ -43,8 +43,8 @@ const groupSchema = new mongoose.Schema({
 
 // Middleware: Automatically update the member count before saving
 groupSchema.pre("save", function (next) {
-  if (this.isModified("member_usernames")) {
-    this.no_of_members = this.member_usernames.length;
+  if (this.isModified("member_userId")) {
+    this.no_of_members = this.member_userId.length;
   }
   next();
 });

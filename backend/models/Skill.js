@@ -9,7 +9,7 @@ const skillSchema = new mongoose.Schema ({
   classId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "SkillClass",
-    required: ["Every skill must belong to a class"],
+    required: [true,"Every skill must belong to a class"],
   },
   name: {
     type: String,

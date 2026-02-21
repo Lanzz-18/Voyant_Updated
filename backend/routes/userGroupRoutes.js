@@ -4,9 +4,13 @@ const userGroupController = require("../controllers/userGroupController");
 
 // Routes
 router
-  .route("/:id")
+  .route("/")
   .post(userGroupController.createGroup)
   .get(userGroupController.getAllGroups);
 
-router.get("/", userGroupController.getGroupById);
-router.get("/", userGroupController.getUserGroups);
+router
+  .route("/:id")
+  .get(userGroupController.getGroupById);
+router
+  .route("/user/:userId")
+  .get(userGroupController.getUserGroups);

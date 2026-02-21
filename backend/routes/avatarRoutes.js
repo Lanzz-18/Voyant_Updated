@@ -8,7 +8,9 @@ router
   .get(avatarController.getAvatar)
   .patch(avatarController.updateAvatar)
   .delete(avatarController.deleteAvatar);
-router.patch(avatarController.updateCosmetics);
+
+router.patch("/:id", avatarController.updateCosmetics);
+
 router
   .route("/")
   .post(avatarController.createAvatar)

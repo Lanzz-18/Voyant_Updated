@@ -13,7 +13,7 @@ const userTripSchema = new mongoose.Schema({
   },
   location: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Location",
+    ref: "Destination",
     required: [true, "A quest must belong to a specific location"],
   },
   xpGained: {
