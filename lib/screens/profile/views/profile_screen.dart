@@ -74,8 +74,13 @@ Widget build(BuildContext context) {
                 ),
                 const Text('I am new here !', style: TextStyle(color: Colors.white, fontSize: 14)),
             ],
-          )
-          )
+          ),
+          ),
+          //implementation of the logout button through profile 
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.redAccent), //the standard logout icon 
+            onPressed: ()=> context.read<AuthenticationBloc>().add(AuthenticationLogoutRequested()), 
+            )
       ],
       )
   );
