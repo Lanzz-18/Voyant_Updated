@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:voyant/screens/map/map.dart';
 import 'package:voyant/screens/home/views/home_tab.dart';
+import 'package:voyant/screens/home/views/trips_tab.dart';
 
 class RootScreen extends StatefulWidget {
   const RootScreen({super.key});
@@ -14,9 +15,7 @@ class _RootScreenState extends State<RootScreen> {
 
   final List<Widget> _screens = [
     const HomeTab(),
-    const Center(
-      child: Text("Trips", style: TextStyle(color: Colors.white)),
-    ),
+    const TripsTab(),
     const Map(),
     const Center(
       child: Text("Inventory", style: TextStyle(color: Colors.white)),
