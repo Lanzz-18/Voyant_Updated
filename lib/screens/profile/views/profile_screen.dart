@@ -86,3 +86,43 @@ Widget build(BuildContext context) {
   );
 }
 }
+
+class Stats extends StatelessWidget {
+  const Stats({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column (
+      crossAxisAlignment: CrossAxisAlignment.start, //stops content from being centered or misaligned 
+      children: [
+        const Text("Achievements", style: TextStyle(color: Colors.white, fontSize : 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 12),
+        Wrap (
+          spacing: 10,
+          children: const [
+            BadgeBuild(label: 'Conquered Ghosts'),
+            BadgeBuild(label: 'Speedrunners'),
+          ],
+        ),
+        const SizedBox(height: 30),
+        const Text("Completed Quests",style: TextStyle(color: Colors.white, fontSize : 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 12),
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(), //prevbents seperately scrolling 
+          crossAxisCount: 3,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          children: const [
+            QuestDisplayBox(name : "Galle track", icon: Icons.terrain),
+            QuestDisplayBox(name: "Exploring Fort", icon: Icons.map),
+            QuestDisplayBox(name: "Sightseeing", icons: Icons.camera),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+//Todo - building the badge build as reusable components 
+//Todo - building quest displaybox to display the quests properly 
