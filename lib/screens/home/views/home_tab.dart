@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:voyant/widgets/animated_gradient_background.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
@@ -6,21 +7,22 @@ class HomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0F),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 24),
-              _buildXPCard(),
-              const SizedBox(height: 24),
-              _buildStatsRow(),
-              const SizedBox(height: 24),
-              _buildActiveTrip(),
-            ],
+      body: AnimatedGradientBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 24),
+                _buildXPCard(),
+                const SizedBox(height: 24),
+                _buildStatsRow(),
+                const SizedBox(height: 24),
+                _buildActiveTrip(),
+              ],
+            ),
           ),
         ),
       ),
@@ -124,7 +126,7 @@ class HomeTab extends StatelessWidget {
             child: LinearProgressIndicator(
               value: 0.65,
               minHeight: 8,
-              backgroundColor: Colors.white12,
+              backgroundColor: const Color.fromARGB(31, 172, 65, 238),
               valueColor: const AlwaysStoppedAnimation<Color>(
                 Color(0xFFB020DD),
               ),
@@ -162,7 +164,7 @@ class HomeTab extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF12121A),
+          color: const Color.fromARGB(108, 70, 0, 145),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Color(0xFF1A0A2E)),
         ),
