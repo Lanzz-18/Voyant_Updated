@@ -139,7 +139,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                   gradient: RadialGradient(
                     colors: [
                       const Color(0xFF5E35D1)
-                          .withOpacity(0.28 * _glowAnimation.value),
+                          .withValues(alpha: 0.28 * _glowAnimation.value),
                       Colors.transparent,
                     ],
                     radius: 0.85,
@@ -194,19 +194,19 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                             colors: [Color(0xFF1E1550), Color(0xFF130D3A)],
                           ),
                           border: Border.all(
-                            color: const Color(0xFF4A3FA8).withOpacity(0.55),
+                            color: const Color(0xFF4A3FA8).withValues(alpha: 0.55),
                             width: 1.5,
                           ),
                           boxShadow: [
                             BoxShadow(
                               color: const Color(0xFF3EC6FF)
-                                  .withOpacity(0.20 * _glowAnimation.value),
+                                  .withValues(alpha: 0.20 * _glowAnimation.value),
                               blurRadius: 28,
                               spreadRadius: 2,
                             ),
                             BoxShadow(
                               color: const Color(0xFFFFD700)
-                                  .withOpacity(0.08 * _glowAnimation.value),
+                                  .withValues(alpha: 0.08 * _glowAnimation.value),
                               blurRadius: 40,
                               spreadRadius: -4,
                             ),
@@ -230,7 +230,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                       boxShadow: [
                                         BoxShadow(
                                           color: const Color(0xFFFFD700)
-                                              .withOpacity(
+                                              .withValues(alpha: 
                                                   0.25 * _glowAnimation.value),
                                           blurRadius: 20,
                                           spreadRadius: 2,
@@ -269,14 +269,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                     borderRadius: BorderRadius.circular(14),
                                     color: const Color(0xFF1A1240),
                                     border: Border.all(
-                                      color: const Color(0xFF5E35D1).withOpacity(
+                                      color: const Color(0xFF5E35D1).withValues(alpha: 
                                           0.4 + 0.3 * _glowAnimation.value),
                                       width: 1.5,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
                                         color: const Color(0xFF7C5CFC)
-                                            .withOpacity(
+                                            .withValues(alpha: 
                                                 0.12 * _glowAnimation.value),
                                         blurRadius: 12,
                                       ),
@@ -330,7 +330,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                         color: const Color(0xFF1A1240),
                                         border: Border.all(
                                           color: const Color(0xFF4A3FA8)
-                                              .withOpacity(_isFull ? 0.25 : 0.7),
+                                              .withValues(alpha: _isFull ? 0.25 : 0.7),
                                           width: 1.5,
                                         ),
                                       ),
@@ -346,7 +346,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                               : 'Enter member name…',
                                           hintStyle: TextStyle(
                                             color: const Color(0xFF7A6FC0)
-                                                .withOpacity(0.7),
+                                                .withValues(alpha: 0.7),
                                             fontSize: 13,
                                           ),
                                           contentPadding:
@@ -380,9 +380,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                         border: Border.all(
                                           color: _isFull
                                               ? const Color(0xFF2E2560)
-                                                  .withOpacity(0.3)
+                                                  .withValues(alpha: 0.3)
                                               : const Color(0xFFFFD700)
-                                                  .withOpacity(0.4),
+                                                  .withValues(alpha: 0.4),
                                           width: 1.5,
                                         ),
                                         boxShadow: _isFull
@@ -390,7 +390,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                             : [
                                                 BoxShadow(
                                                   color: const Color(0xFF7C5CFC)
-                                                      .withOpacity(0.4),
+                                                      .withValues(alpha: 0.4),
                                                   blurRadius: 12,
                                                   offset: const Offset(0, 4),
                                                 ),
@@ -399,7 +399,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                       child: Icon(
                                         Icons.add_rounded,
                                         color: _isFull
-                                            ? Colors.white.withOpacity(0.2)
+                                            ? Colors.white.withValues(alpha: 0.2)
                                             : Colors.white,
                                         size: 24,
                                       ),
@@ -434,7 +434,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                             Icon(
                                               Icons.person_add_alt_1_outlined,
                                               color: const Color(0xFF4A3FA8)
-                                                  .withOpacity(0.6),
+                                                  .withValues(alpha: 0.6),
                                               size: 36,
                                             ),
                                             const SizedBox(height: 8),
@@ -442,7 +442,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                                               'No members yet',
                                               style: TextStyle(
                                                 color: const Color(0xFF7A6FC0)
-                                                    .withOpacity(0.7),
+                                                    .withValues(alpha: 0.7),
                                                 fontSize: 13,
                                               ),
                                             ),
@@ -485,12 +485,12 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                           end: Alignment.centerRight,
                         ),
                         border: Border.all(
-                          color: const Color(0xFFFFD700).withOpacity(0.45),
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.45),
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF7C5CFC).withOpacity(0.5),
+                            color: const Color(0xFF7C5CFC).withValues(alpha: 0.5),
                             blurRadius: 20,
                             offset: const Offset(0, 6),
                           ),
@@ -532,13 +532,13 @@ class _CreateGroupScreenState extends State<CreateGroupScreen>
                         shape: BoxShape.circle,
                         color: const Color(0xFF2E1F7A),
                         border: Border.all(
-                          color: const Color(0xFF5E35D1).withOpacity(0.65),
+                          color: const Color(0xFF5E35D1).withValues(alpha: 0.65),
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
                             color: const Color(0xFF7C5CFC)
-                                .withOpacity(0.4 * _glowAnimation.value),
+                                .withValues(alpha: 0.4 * _glowAnimation.value),
                             blurRadius: 18,
                             spreadRadius: 1,
                           ),
@@ -603,7 +603,7 @@ class _MemberTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         color: const Color(0xFF1A1240),
         border: Border.all(
-          color: const Color(0xFF4A3FA8).withOpacity(0.45),
+          color: const Color(0xFF4A3FA8).withValues(alpha: 0.45),
           width: 1,
         ),
       ),
@@ -614,7 +614,7 @@ class _MemberTile extends StatelessWidget {
             height: 32,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(colors: [color, color.withOpacity(0.5)]),
+              gradient: LinearGradient(colors: [color, color.withValues(alpha: 0.5)]),
             ),
             child: Center(
               child: Text(
@@ -648,7 +648,7 @@ class _MemberTile extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: const Color(0xFF2E1F7A),
                 border: Border.all(
-                  color: const Color(0xFFB04FC8).withOpacity(0.4),
+                  color: const Color(0xFFB04FC8).withValues(alpha: 0.4),
                   width: 1,
                 ),
               ),
@@ -726,13 +726,13 @@ class _StarfieldPainter extends CustomPainter {
       final opacity =
           (0.3 + 0.7 * math.sin((progress + star.phase) * 2 * math.pi))
               .clamp(0.0, 1.0);
-      paint.color = Colors.white.withOpacity(opacity * 0.75);
+      paint.color = Colors.white.withValues(alpha: opacity * 0.75);
       canvas.drawCircle(
           Offset(star.x * size.width, star.y * size.height),
           star.radius,
           paint);
     }
-    paint.color = const Color(0xFFFFD700).withOpacity(0.65);
+    paint.color = const Color(0xFFFFD700).withValues(alpha: 0.65);
     for (final pos in const [
       Offset(0.08, 0.10),
       Offset(0.88, 0.16),
