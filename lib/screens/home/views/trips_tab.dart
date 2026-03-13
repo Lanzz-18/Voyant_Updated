@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:voyant/widgets/animated_gradient_background.dart';
+import 'package:voyant/screens/trips/views/trip_detail_screen.dart';
 
 class TripsTab extends StatefulWidget {
   const TripsTab({super.key});
@@ -125,7 +127,12 @@ class _TripsTabState extends State<TripsTab>
 
   Widget _buildTripCard(Map<String, dynamic> trip) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const TripDetailScreen()),
+        );
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(20),
