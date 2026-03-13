@@ -42,7 +42,7 @@ exports.initBusinessPartnerDashboard = functions.https.onCall(async (data, conte
   const uid = context.auth.uid; //retrieve user ID 
   const userRef = db.collection("users").doc(uid); //creates a reference to the user(based on UID) document ( basically a pointer)
   //creates a ref to the business partner data of the app
-  const partnerRef = db.collection("business_partner_info").doc(uid); 
+  const partnerRef = db.collection("business_partner_data").doc(uid); 
 
   const [userSnap, partnerSnap] = await Promise.all([userRef.get(), partnerRef.get()]);
 
@@ -80,6 +80,69 @@ exports.initBusinessPartnerDashboard = functions.https.onCall(async (data, conte
   }
 );
 
+exports.refreshBusinessPartnerCode = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "you should be signed in to refresh the code."
+    );
+  }
 
+  const uid = context.auth.uid;
+  const userRef = db.collection("users").doc(uid);
+  const partnerRef = db.collection("business_partner_data").doc(uid);
+
+  const [userSnap, partnerSnap] = await Promise.all([userRef.get(), partnerRef.get()]);
+
+  const isBusinessPartner = userSnap.exists && userSnap.data().isBusinessPartner === true;
+  if (!isBusinessPartner) {
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "Only partnered businesses can refresh the code."
+    );
+  }
+
+  const now = admin.firestore.Timestamp.now();
+  //calculating timestamp for hour 
+  const oneHourAgo = admin.firestore.Timestamp.fromMillis(now.toMillis() - 60 * 60 * 1000);
+
+  const partner = partnerSnap.exists ? partnerSnap.data() : null;
+  //if last refresh is missing or refreshcount is missing it will be set to 0 
+  const lastRefreshAtMs = partner?.lastRefreshAt?.toMillis?.() ?? 0;
+  const refreshCount = partner?.refreshCount ?? 0;
+
+  const windowReset = lastRefreshAtMs < oneHourAgo.toMillis();
+  const windowRefreshCount = windowReset ? 0 : refreshCount;
+
+  if (windowRefreshCount >= MAX_REFRESHES_HOURLY) {
+    throw new functions.https.HttpsError(
+      "limit-reached",
+      "Refresh limit has been reached. Please try again later."
+    );
+  }
+
+  const expiresAt = admin.firestore.Timestamp.fromMillis(
+    now.toMillis() + CODE_EXPIRY_TIME * 60 * 1000
+  );
+
+  await partnerRef.set(
+    {
+      currentCode: createBusinessCode(),
+      codeExpiresAt: expiresAt,
+      redemptions : 0,
+      maxRedemptionsPerCode: MAX_REDEMPTIONS,
+      refreshCount: windowReset ? 1 : refreshCount + 1,
+      lastRefresh: now,
+      refreshLimitPerHour: MAX_REFRESHES_HOURLY,
+      todayRedemptions: partner?.dailyRedemptions ?? 0,
+      totalRedemptions: partner?.totalRedemptions ?? 0,
+      lastResetDate: partner?.lastResetDate ?? formatDate(now),
+      recentRedemptionTimestamps: partner?.recentRedemptionTimestamps ?? [],
+    },
+    { merge: true }
+  );
+
+  return {success: true}
+});
 
  
