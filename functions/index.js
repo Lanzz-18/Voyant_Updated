@@ -111,7 +111,7 @@ exports.refreshBusinessPartnerCode = functions.https.onCall(async (data, context
   const lastRefreshAtMs = partner?.lastRefreshAt?.toMillis?.() ?? 0;
   const refreshCount = partner?.refreshCount ?? 0;
 
-  const windowReset = lastRefreshAtMs < oneHourAgo.toMillis();
+  const windowReset = lastRefreshAt < oneHourAgo.toMillis();
   const windowRefreshCount = windowReset ? 0 : refreshCount;
 
   if (windowRefreshCount >= MAX_REFRESHES_HOURLY) {
@@ -134,7 +134,7 @@ exports.refreshBusinessPartnerCode = functions.https.onCall(async (data, context
       refreshCount: windowReset ? 1 : refreshCount + 1,
       lastRefresh: now,
       refreshLimitPerHour: MAX_REFRESHES_HOURLY,
-      todayRedemptions: partner?.dailyRedemptions ?? 0,
+      dailyRedemptions: partner?.dailyRedemptions ?? 0,
       totalRedemptions: partner?.totalRedemptions ?? 0,
       lastResetDate: partner?.lastResetDate ?? formatDate(now),
       recentRedemptionTimestamps: partner?.recentRedemptionTimestamps ?? [],
@@ -144,5 +144,98 @@ exports.refreshBusinessPartnerCode = functions.https.onCall(async (data, context
 
   return {success: true}
 });
+
+exports.redeemQuestCode = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated", "you should be signed in.");
+  }
+
+  //Code extraction logic - accesing the code and if it does not exist using empty sring
+  const code = (data?.code ?? "").toString().trim();
+  //code length check and regex check to ensure that the code will only contain numbers
+  if (code.length !== CODE_LENGTH || !/^\d+$/.test(code)) {
+    throw new functions.https.HttpsError(
+      "invalid-argument", 
+      "Invalid Code.");
+  }
+
+  const now = admin.firestore.Timestamp.now();
+
+//Making one code ( which will be active ) map to one business partner
+  const querySnap = await db
+    .collection("business_partner_data")
+    .where("currentCode", "==", code)
+    .limit(1)
+    .get();
+
+  if (querySnap.empty) {
+    throw new functions.https.HttpsError(
+      "not-found", 
+      "The code was not connected to a business partner or has expired.");
+  }
+
+  const doc = querySnap.docs[0];
+  const partner = doc.data();
+
+  //executes if it is expiration time is missing or it is expired 
+  const expiresAt = partner.codeExpiresAt;
+  if (!expiresAt || expiresAt.toMillis() < now.toMillis()) {
+    throw new functions.https.HttpsError(
+      "code-no-longer-valid", 
+      "Code has expired.");
+  }
+
+  const redemptionsThisCode = partner.redemptions ?? 0;
+  const maxPerCode = partner.maxRedemptionsPerCode ?? MAX_REDEMPTIONS;
+
+  if (redemptionsThisCode >= maxPerCode) {
+    throw new functions.https.HttpsError(
+      "redemptions-have-exceeded",
+      "This code has reached its redemption limit."
+    );
+  }
+
+  const today = formatDate(now);
+  const lastResetDate = partner.lastResetDate ?? today;
+  //reset the counter if it's a new day of redemption
+  const todayRedemptions = lastResetDate === today ? (partner.dailyRedemptions ?? 0) : 0;
+  const totalRedemptions = (partner.totalRedemptions ?? 0) + 1;
+
+  const recent = Array.isArray(partner.recentRedemptionTimestamps)
+    ? partner.recentRedemptionTimestamps
+    : [];
+  const newRecent = [now, ...recent].slice(0, RECENT_REDEMPTIONS); //removing any old entries 
+
+  const newRedemptionsThisCode = redemptionsThisCode + 1;
+  const shouldChange = newRedemptionsThisCode >= maxPerCode;
+
+  const update = {
+    redemptionsThisCode: newRedemptionsThisCode,
+    dailyredemptions: todayRedemptions + 1,
+    totalRedemptions,
+    lastResetDate: today,
+    recentRedemptionTimestamps: newRecent,
+  };
+
+  if (shouldChange) {
+    const expiresAtNew = admin.firestore.Timestamp.fromMillis(
+      now.toMillis() + CODE_EXPIRY_TIME * 60 * 1000
+    );
+    update.currentCode = createBusinessCode();
+    update.codeExpiresAt = expiresAtNew;
+    update.redemptions = 0;
+  }
+
+  await doc.ref.update(update);
+
+  return {
+    success: true,
+    //TODO - reward information 
+  };
+
+});
+
+
 
  
