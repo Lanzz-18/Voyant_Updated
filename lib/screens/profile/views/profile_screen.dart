@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:voyant/blocs/authentication_bloc/authentication_bloc.dart';
+import 'package:voyant/components/badge_build.dart';
+import 'package:voyant/components/quest_display_section.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -107,18 +109,7 @@ class Stats extends StatelessWidget {
         const SizedBox(height: 30),
         const Text("Completed Quests",style: TextStyle(color: Colors.white, fontSize : 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(), //prevbents seperately scrolling 
-          crossAxisCount: 3,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          children: const [
-            QuestDisplayBox(name : "Galle track", icon: Icons.terrain),
-            QuestDisplayBox(name: "Exploring Fort", icon: Icons.map),
-            QuestDisplayBox(name: "Sightseeing", icons: Icons.camera),
-          ],
-        ),
+        const QuestDisplaySection(),
       ],
     );
   }
