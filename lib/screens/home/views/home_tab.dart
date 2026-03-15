@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:voyant/widgets/animated_gradient_background.dart';
-import 'package:voyant/screens/home/views/trips_tab.dart';
 
 class HomeTab extends StatelessWidget {
   final VoidCallback onTripsTap;

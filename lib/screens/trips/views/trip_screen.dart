@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:voyant/screens/quest/views/quest_page.dart';
+import 'package:voyant/screens/quest/views/quests_list_screen.dart';
 import 'package:voyant/widgets/animated_gradient_background.dart';
 
 class TripDetailScreen extends StatelessWidget {
@@ -279,7 +279,9 @@ class TripDetailScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const QuestScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const QuestsListScreen(),
+                  ),
                 );
               },
               child: SizedBox(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:voyant/widgets/animated_gradient_background.dart';
-import 'package:voyant/screens/trips/views/trip_detail_screen.dart';
+import 'package:voyant/screens/trips/views/trip_screen.dart';
+import 'package:voyant/screens/quest/views/quests_list_screen.dart';
 
 class TripsTab extends StatefulWidget {
   const TripsTab({super.key});
@@ -150,9 +151,19 @@ class _TripsTabState extends State<TripsTab> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${trip['questsDone']}/${trip['totalQuests']} quests',
-                  style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const QuestsListScreen(),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    '${trip['questsDone']}/${trip['totalQuests']} quests',
+                    style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                  ),
                 ),
                 Text(
                   '${(trip['progress'] * 100).toInt()}%',

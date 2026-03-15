@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:voyant/blocs/authentication_bloc/authentication_bloc.dart';
-import 'package:voyant/screens/map/map.dart';
 import 'package:voyant/screens/home/views/root_screen.dart';
 
 class Homescreen extends StatelessWidget {
