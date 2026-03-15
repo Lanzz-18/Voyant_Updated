@@ -9,12 +9,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:voyant/app.dart';
 import 'package:user_repository/user_repository.dart';
-import 'package:voyant/blocs/authentication_bloc/authentication_bloc.dart';
 
 void main() {
-  testWidgets('App smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(MyApp(FirebaseUserRepo()));
+  testWidgets('App builds without Firebase errors', (WidgetTester tester) async {
+    // Create a mock repository for testing
+    final mockRepo = MockUserRepository();
+    
+    await tester.pumpWidget(MyApp(mockRepo));
 
+    // Just verify the app builds - no UI rendering checks
     expect(find.byType(MaterialApp), findsOneWidget);
   });
+}
+
+class MockUserRepository implements UserRepository {
+  @override
+  Stream<MyUser> get user => Stream.value(MyUser.empty);
+  
+  @override
+  Future<MyUser> signUp(MyUser myUser, String password) async {
+    return MyUser.empty;
+  }
+  
+  @override
+  Future<void> setUserData(MyUser myUser) async {}
+  
+  @override
+  Future<void> signIn(String email, String password) async {}
+  
+  @override
+  Future<void> logOut() async {}
 }

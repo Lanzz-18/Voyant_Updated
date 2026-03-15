@@ -149,47 +149,47 @@ class _BusinessScreenState extends State<BusinessScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Business Integration'),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())  
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header Card 
-               Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Dashboard',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('Business Integration'),
+    ),
+    body: _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                // Header Card
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Dashboard',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Manage your codes',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                            ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Manage your codes',
+                          style: TextStyle(
+                            color: Colors.grey[600],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                ),
 
+                const SizedBox(height: 16),
 
-                  //initialization if no dashboard 
                 if (_currentCode == null || _currentCode!.isEmpty) ...[
                   Card(
                     child: Padding(
@@ -223,133 +223,152 @@ class _BusinessScreenState extends State<BusinessScreen> {
                   const SizedBox(height: 16),
                 ],
 
+                if (_currentCode != null && _currentCode!.isNotEmpty) ...[
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Current Code',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
 
-                  if (_currentCode != null && _currentCode!.isNotEmpty) ...[
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Current Code',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: _isCodeExpired
+                                  ? Colors.grey[100]
+                                  : Colors.blue[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: _isCodeExpired
+                                    ? Colors.grey
+                                    : Colors.blue,
+                                width: 2,
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: _isCodeExpired ? Colors.grey[100] : Colors.blue[50],
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _isCodeExpired ? Colors.grey : Colors.blue,
-                                  width: 2,
+                            child: Column(
+                              children: [
+                                Text(
+                                  _currentCode!,
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 4,
+                                    color: _isCodeExpired
+                                        ? Colors.grey
+                                        : Colors.blue,
+                                  ),
                                 ),
-                              ),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    _currentCode!,
-                                    style: TextStyle(
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 4,
-                                      color: _isCodeExpired ? Colors.grey : Colors.blue,
-                                    ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  _isCodeExpired
+                                      ? 'Expired'
+                                      : 'Expires in $_timeRemaining',
+                                  style: TextStyle(
+                                    color: _isCodeExpired
+                                        ? Colors.grey
+                                        : Colors.blue[700],
                                   ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    _isCodeExpired ? 'Expired' : 'Expires in $_timeRemaining',
-                                    style: TextStyle(
-                                      color: _isCodeExpired ? Colors.grey : Colors.blue[700],
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: _refreshCount < _maxRefreshes ? _refreshCode : null,
-                                child: Text(_refreshCount >= _maxRefreshes
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _refreshCount < _maxRefreshes
+                                  ? _refreshCode
+                                  : null,
+                              child: Text(
+                                _refreshCount >= _maxRefreshes
                                     ? 'Refresh Limit Reached'
-                                    : 'Refresh Code'),
+                                    : 'Refresh Code',
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                  ),
 
-              
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Statistics',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                  const SizedBox(height: 16),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Statistics',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildStatCard(
+                                  'Redemptions',
+                                  '$_redemptions/$_maxRedemptions',
+                                  Icons.people,
+                                  Colors.green,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildStatCard(
-                                    'Redemptions',
-                                    '$_redemptions/$_maxRedemptions',
-                                    Icons.people,
-                                    Colors.green,
-                                  ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildStatCard(
+                                  'Refreshes',
+                                  '$_refreshCount/$_maxRefreshes',
+                                  Icons.refresh,
+                                  Colors.blue,
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildStatCard(
-                                    'Refreshes',
-                                    '$_refreshCount/$_maxRefreshes',
-                                    Icons.refresh,
-                                    Colors.blue,
-                                  ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildStatCard(
+                                  'Daily',
+                                  '$_dailyRedemptions',
+                                  Icons.today,
+                                  Colors.orange,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildStatCard(
-                                    'Daily',
-                                    '$_dailyRedemptions',
-                                    Icons.today,
-                                    Colors.orange,
-                                  ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildStatCard(
+                                  'Total',
+                                  '$_totalRedemptions',
+                                  Icons.assessment,
+                                  Colors.purple,
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildStatCard(
-                                    'Total',
-                                    '$_totalRedemptions',
-                                    Icons.assessment,
-                                    Colors.purple,
-                                  ),
-                                ),
-                              ],
-                            ), 
-                         ],
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 16),
-                 ],
+                  ),
 
+                  const SizedBox(height: 16),
 
                   Card(
                     child: Padding(
@@ -365,6 +384,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
+
                           TextField(
                             controller: _codeController,
                             keyboardType: TextInputType.number,
@@ -376,11 +396,14 @@ class _BusinessScreenState extends State<BusinessScreen> {
                               counterText: '',
                             ),
                           ),
+
                           const SizedBox(height: 16),
+
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: _codeController.text.length == 6 && !_isLoading
+                              onPressed: _codeController.text.length == 6 &&
+                                      !_isLoading
                                   ? _redeemCode
                                   : null,
                               child: const Text('Redeem Code'),
@@ -391,10 +414,11 @@ class _BusinessScreenState extends State<BusinessScreen> {
                     ),
                   ),
                 ],
+              ],
             ),
           ),
-    );
-  }
+  );
+}
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Container(
