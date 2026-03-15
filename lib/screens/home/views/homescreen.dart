@@ -4,6 +4,7 @@ import 'package:voyant/blocs/authentication_bloc/authentication_bloc.dart';
 import 'package:voyant/screens/map/map.dart';
 import 'package:voyant/screens/avatar/views/avatar_screen.dart';
 import 'package:voyant/screens/classes/views/classScreen.dart';
+import 'package:voyant/screens/settings_screen.dart';
 
 
 class Homescreen extends StatelessWidget {
@@ -30,6 +31,16 @@ class Homescreen extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const ClassScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
                 ),
               );
             },
