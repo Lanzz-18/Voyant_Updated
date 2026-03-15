@@ -9,12 +9,7 @@ class TripsTab extends StatefulWidget {
   State<TripsTab> createState() => _TripsTabState();
 }
 
-class _TripsTabState extends State<TripsTab>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Alignment> _topAlignment;
-  late Animation<Alignment> _bottomAlignment;
-
+class _TripsTabState extends State<TripsTab> {
   final List<Map<String, dynamic>> trips = [
     {
       'title': 'Colombo Explorer',
@@ -30,7 +25,7 @@ class _TripsTabState extends State<TripsTab>
       'title': 'Galle Fort Adventure',
       'location': 'Galle, Sri Lanka',
       'progress': 0.85,
-      'questsDone': 67,
+      'questsDone': 17,
       'totalQuests': 20,
       'status': 'In Progress',
       'statusColor': Colors.orange,
@@ -39,61 +34,9 @@ class _TripsTabState extends State<TripsTab>
   ];
 
   @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 4),
-    )..repeat(reverse: true);
-
-    _topAlignment = TweenSequence<Alignment>([
-      TweenSequenceItem(
-        tween: Tween<Alignment>(
-          begin: Alignment.topLeft,
-          end: Alignment.topRight,
-        ),
-        weight: 1,
-      ),
-    ]).animate(_controller);
-
-    _bottomAlignment = TweenSequence<Alignment>([
-      TweenSequenceItem(
-        tween: Tween<Alignment>(
-          begin: Alignment.bottomRight,
-          end: Alignment.bottomLeft,
-        ),
-        weight: 1,
-      ),
-    ]).animate(_controller);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: _topAlignment.value,
-                end: _bottomAlignment.value,
-                colors: const [
-                  Color(0xFF0A0A0F),
-                  Color(0xFF1A0A2E),
-                  Color(0xFF551161),
-                ],
-              ),
-            ),
-            child: child,
-          );
-        },
+      body: AnimatedGradientBackground(
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
