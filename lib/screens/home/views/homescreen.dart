@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:voyant/screens/home/views/root_screen.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:voyant/blocs/authentication_bloc/authentication_bloc.dart';
-import 'package:voyant/screens/map/map.dart';
-import 'package:voyant/screens/avatar/views/avatar_screen.dart';
-import 'package:voyant/screens/classes/views/classScreen.dart';
+//import 'package:flutter_bloc/flutter_bloc.dart';
+//import 'package:voyant/blocs/authentication_bloc/authentication_bloc.dart';
+//import 'package:voyant/screens/map/map.dart';
+//import 'package:voyant/screens/avatar/views/avatar_screen.dart';
+//import 'package:voyant/screens/classes/views/classScreen.dart';
 
 
 class Homescreen extends StatelessWidget {
