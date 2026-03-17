@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "75009599502",
+    "project_id": "voyant-651c5",
+    "storage_bucket": "voyant-651c5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:75009599502:android:1fb7f0c62451dab9a7345f",
+        "android_client_info": {
+          "package_name": "com.example.voyant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpctyxHTzsXaH4ysl_rsxLtLZXMar7Ks4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

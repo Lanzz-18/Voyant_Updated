@@ -1,0 +1,42 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run Tests & Analysis
+    runs-on: ubuntu-latest       # Free Linux runner
+
+    steps:
+      # 1. Check out your code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Flutter
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.4'   
+          channel: 'stable'
+          cache: true           # Caches Flutter SDK to speed up runs
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 4. Check code formatting
+      - name: Check formatting
+        run: dart format --set-exit-if-changed . || echo "Formatting issues found but continuing"
+
+      # 5. Run static analysis (catches errors before runtime)
+      - name: Analyze code
+        run: flutter analyze --no-fatal-infos
+
+      # 6. Run all unit and widget tests
+      - name: Run tests
+        run: flutter test --coverage
+
