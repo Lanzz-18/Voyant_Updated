@@ -249,7 +249,7 @@ class _RewardScreenState extends State<RewardScreen>
                   ),
                 ),
               ),
-  }
+
               // main body 
               Center(
                 child: Padding(
@@ -458,12 +458,92 @@ class _RewardScreenState extends State<RewardScreen>
                         ),
                       ),
 
-                      const SizedBox(height: 40)
+                      const SizedBox(height: 40),
 
-                  )
-                )
-              )
-            ]
+                       // Buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly, //ensures that the buttons are side by side 
+                        children: [
+                          ElevatedButton(
+                            onPressed: () async { 
+                              try {
+                                await RewardRepository.saveRewardToUser(
+                                  widget.userId,
+                                  widget.rewardId,
+                                  (widget.startProgress * 1000).toInt(),
+                                  (widget.endProgress * 1000).toInt(),
+                                );
+                                
+                                if (mounted) { //proceeds if screen is active 
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Reward saved !'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Failed to save reward: $e'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            //equip the reward to the avatar ( if equippable)
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF4A148C),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text(
+
+                              "Equip",
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          //exit the current screen and return 
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey.shade600,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text(
+                              "Continue",
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+
+
+                 
 
 
 
