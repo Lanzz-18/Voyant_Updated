@@ -37,3 +37,29 @@ class Message {
   }
 }
 
+class MessageRepository {
+  static const String _baseUrl = 'http://localhost:3000/api/messages';
+  
+  static Future<void> markMessageAsRead(String messageId, String userId) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$_baseUrl/user/$userId/mark-read'), //api end point to mark message 
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({
+          'messageIds': [messageId],
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to mark message as read: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+}
+
+  
