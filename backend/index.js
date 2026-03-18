@@ -11,6 +11,7 @@ const userGroupRoutes = require("./routes/userGroupRoutes");
 const userSkillRoutes = require("./routes/userSkillsRoutes");
 const userTripRoutes = require("./routes/userTripRoutes");
 const userRewardRoutes = require("./routes/userRewardRoutes");
+const messageLogRoutes = require("./routes/messageLogRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,7 @@ app.use("/api/user-groups", userGroupRoutes);
 app.use("/api/user-skills", userSkillRoutes);
 app.use("/api/user-trips", userTripRoutes);
 app.use("/api/rewards", userRewardRoutes);
+app.use("/api/messages", messageLogRoutes);
 
 async function startApp() {
   await connectToDatabase();
