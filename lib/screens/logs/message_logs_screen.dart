@@ -435,3 +435,167 @@ with TickerProviderStateMixin {
       ],
     );
   }
+
+//builds the message card ( how the message will look like in the list)
+   Widget _buildMessageCard(Message message) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12), //adds margins between cards
+      decoration: BoxDecoration(
+        //glass effect/glassmorphism
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _getMessageTypeColor(message.messageType).withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                // character image 
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _getMessageTypeColor(message.messageType),
+                      width: 2,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: message.characterAvatar.isNotEmpty
+                        ? Image.network(
+                            message.characterAvatar,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: _getMessageTypeColor(message.messageType),
+                                child: const Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
+                            color: _getMessageTypeColor(message.messageType),
+                            child: const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // name of sender and message type 
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            message.characterName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: _getMessageTypeColor(message.messageType).withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _getMessageTypeIcon(message.messageType),
+                                  color: _getMessageTypeColor(message.messageType),
+                                  size: 12,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  message.messageType.toUpperCase(),
+                                  style: TextStyle(
+                                    color: _getMessageTypeColor(message.messageType),
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            color: Colors.white.withOpacity(0.6),
+                            size: 12,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            message.location,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.6),
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            _formatTimestamp(message.timestamp),
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.5),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                // only show messages if not read 
+                if (!message.isRead)
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _getMessageTypeColor(message.messageType),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // the content of the message 
+            Text(
+              message.message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
