@@ -9,6 +9,8 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+import java.util.Properties
+
 dependencies {
 
     implementation(platform("com.google.firebase:firebase-bom:34.8.0"))
@@ -48,6 +50,12 @@ android {
         versionName = flutter.versionName
 
         // Manifest placeholders for API keys
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localProperties.load(localPropertiesFile.inputStream())
+        }
+        
         manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = localProperties.getProperty("GOOGLE_MAPS_API_KEY", "")
     }
 

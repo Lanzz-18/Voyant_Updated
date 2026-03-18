@@ -16,7 +16,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.41.4'
           channel: 'stable'
           cache: true
 
@@ -39,6 +39,5 @@ jobs:
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           token: ${{ secrets.FIREBASE_TOKEN }}
-          groups: testers                 # Tester group name from Firebase console
           file: build/app/outputs/flutter-apk/app-release.apk
           releaseNotes: "Build from commit: ${{ github.sha }}"
