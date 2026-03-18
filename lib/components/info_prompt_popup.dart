@@ -102,6 +102,7 @@ class _InfoPromptPopupState extends State<InfoPromptPopup>
     Future.delayed(const Duration(seconds: 8), () {
       if (mounted && !_isDismissing) {
         _dismissPopup();
+
       }
     });
   }
@@ -132,5 +133,22 @@ class _InfoPromptPopupState extends State<InfoPromptPopup>
     _controller.dispose();
     super.dispose();
   }
+
+
+//dynamic styling for messages 
+ Color _getMessageTypeColor() {
+  //700 is used for a more darker swatch ( customizable to a lighter swatch )
+    switch (widget.message.messageType) {
+      case 'hint':
+        return Colors.blue.shade700;
+      case 'warning':
+        return Colors.orange.shade700;
+      case 'quest_update':
+        return Colors.purple.shade700;
+      case 'reward':
+        return Colors.green.shade700;
+      default:
+        return Colors.grey.shade700;
     }
+  }
   
