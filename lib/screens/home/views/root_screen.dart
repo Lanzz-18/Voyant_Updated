@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:voyant/screens/map/map.dart';
 import 'package:voyant/screens/home/views/home_tab.dart';
 import 'package:voyant/screens/trips/views/trips_list_screen.dart';
+import 'package:voyant/screens/avatar/views/cosmetic_screen.dart';
+import 'package:voyant/screens/avatar/views/avatar_screen.dart';
 
 class RootScreen extends StatefulWidget {
   const RootScreen({super.key});
@@ -19,12 +21,8 @@ class _RootScreenState extends State<RootScreen> {
       HomeTab(onTripsTap: () => setState(() => _currentIndex = 1)),
       const TripsTab(),
       const Map(),
-      const Center(
-        child: Text("Inventory", style: TextStyle(color: Colors.white)),
-      ),
-      const Center(
-        child: Text("Avatar", style: TextStyle(color: Colors.white)),
-      ),
+      const CosmeticScreen(),
+      const AvatarScreen(),
     ];
 
     return Scaffold(
@@ -46,7 +44,7 @@ class _RootScreenState extends State<RootScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Map"),
           BottomNavigationBarItem(
             icon: Icon(Icons.backpack),
-            label: "Inventory",
+            label: "Cosmetic",
           ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Avatar"),
         ],
