@@ -210,6 +210,37 @@ with TickerProviderStateMixin {
         );
       }
     }
-  }
+   }
 
+
+    //Dynamic colors and icons //
+    
+    Color _getMessageTypeColor(String messageType) {
+        switch (messageType) {
+        case 'hint':
+            return Colors.blue.shade600;
+        case 'warning':
+            return Colors.orange.shade600;
+        case 'quest_update':
+            return Colors.purple.shade600;
+        case 'reward':
+            return Colors.green.shade600;
+        default:
+            return Colors.grey.shade600;
+        }
+    }
+
+    IconData _getMessageTypeIcon(String messageType) {
+        switch (messageType) {
+        case 'hint':
+            return Icons.lightbulb;
+        case 'warning':
+            return Icons.warning;
+        case 'quest_update':
+            return Icons.assignment;
+        case 'reward':
+            return Icons.emoji_events;
+        default:
+            return Icons.info;
+        }
     }
