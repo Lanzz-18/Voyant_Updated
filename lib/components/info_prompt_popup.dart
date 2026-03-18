@@ -152,3 +152,98 @@ class _InfoPromptPopupState extends State<InfoPromptPopup>
     }
   }
   
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 50,
+      left: 16,
+      right: 16,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(0, _slideAnimation.value * 100),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: GestureDetector(
+                onTap: _dismissPopup,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.85),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: _getMessageTypeColor().withOpacity(0.5),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                      BoxShadow(
+                        color: _getMessageTypeColor().withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      //creating and styling for npc/ogranization profile 
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: _getMessageTypeColor(),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _getMessageTypeColor().withOpacity(0.3), //glow effect 
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: ClipOval( //makes the image stay circular 
+                          child: widget.message.characterAvatar.isNotEmpty
+                              ? Image.network(
+                                  widget.message.characterAvatar,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: _getMessageTypeColor(),
+                                      child: const Icon(
+                                        Icons.person,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Container(
+                                  color: _getMessageTypeColor(),
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 12)
+
+                  )
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
