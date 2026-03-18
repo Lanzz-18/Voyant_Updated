@@ -98,6 +98,39 @@ class _InfoPromptPopupState extends State<InfoPromptPopup>
 
     _controller.forward(); //starting animation 
 
+    //remove the popup after 8 seconds 
+    Future.delayed(const Duration(seconds: 8), () {
+      if (mounted && !_isDismissing) {
+        _dismissPopup();
+      }
+    });
+  }
+
+  //calls the dismiss function to remove the popup 
+  Future<void> _dismissPopup() async {
+    if (_isDismissing) return;
+    
+    _isDismissing = true;
+    
+    // Marks message as read
+    try {
+      await MessageRepository.markMessageAsRead(widget.message.id, widget.userId);
+    } catch (e) {
+      debugPrint('Failed to mark message as read: $e');
+    }
+
+    // dismiss animation
+    await _controller.reverse();
+    
+    if (mounted) {
+      widget.onDismiss?.call(widget.message.id); 
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
     }
   
