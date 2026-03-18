@@ -89,3 +89,127 @@ class MessageLogsRepository {
     }
   }
 }
+
+//main ui screen
+class MessageLogsScreen extends StatefulWidget {
+  final String userId;
+
+  const MessageLogsScreen({super.key, required this.userId});
+
+  @override
+  State<MessageLogsScreen> createState() => _MessageLogsScreenState();
+}
+
+class _MessageLogsScreenState extends State<MessageLogsScreen>
+with TickerProviderStateMixin {
+  late TabController _tabController;
+  List<Message> _messages = [];
+  List<Message> _filteredMessages = [];
+  bool _isLoading = true;
+  String? _error;
+  int _unreadCount = 0;
+  String _currentFilter = 'all'; // Track current filter
+  final ScrollController _scrollController = ScrollController();
+  int _currentPage = 1;
+  bool _hasMore = true;
+
+  @override
+  void initState() {
+    //creating tabs of - hunts , quests , rewards and all
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(_onTabChanged); //detects any tab switching to respond 
+    _loadMessages();
+    _loadUnreadCount();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (!_tabController.indexIsChanging) {
+      final filters = ['all', 'hint', 'quest_update', 'reward']; 
+      //updates the current filter
+      _currentFilter = filters[_tabController.index]; 
+      _loadMessages(refresh: true); 
+    }
+  }
+
+  Future<void> _loadMessages({bool refresh = false}) async {
+    if (refresh) { //reset when refreshing it 
+      setState(() {
+        _currentPage = 1;
+        _hasMore = true;
+        _messages.clear();
+        _isLoading = true;
+        _error = null;
+      });
+    }
+
+    try {
+      final messages = await MessageLogsRepository.getUserMessages(
+        widget.userId,
+        page: _currentPage,
+        messageType: _currentFilter == 'all' ? null : _currentFilter,
+      );
+
+      setState(() {
+        if (refresh) {
+          _messages = messages;
+        } else {
+          _messages.addAll(messages);
+        }
+        _filteredMessages = _messages;
+        _isLoading = false;
+        _hasMore = messages.length == 20; // Assuming page size is 20
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadUnreadCount() async {
+    try {
+      final count = await MessageLogsRepository.getUnreadCount(widget.userId);
+      setState(() {
+        _unreadCount = count;
+      });
+    } catch (e) {
+      debugPrint('Failed to load unread count: $e');
+    }
+  }
+
+  Future<void> _markAllAsRead() async {
+    try {
+      await MessageLogsRepository.markAllAsRead(widget.userId);
+      await _loadUnreadCount();
+      await _loadMessages(refresh: true);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('All messages have been marked as read'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to mark messages as read: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+    }
