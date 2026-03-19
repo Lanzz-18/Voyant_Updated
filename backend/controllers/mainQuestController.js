@@ -266,3 +266,18 @@ exports.processDialogueChoice = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+//getting overall quest progress
+exports.getUserQuestProgress = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    
+    const userProgress = await UserMainQuestProgress.find({ userId })
+      .populate('mainQuestId')
+      .populate('subQuestProgress.subQuestId');
+    
+    res.json(userProgress);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
