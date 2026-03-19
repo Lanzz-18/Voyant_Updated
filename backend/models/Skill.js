@@ -11,7 +11,7 @@ const skillSchema = new mongoose.Schema({
   branch: {
     type: String,
     required: true,
-    enum: ["explorer", "warrior", "mage", "rogue"],
+    enum: ["trailblazer", "wanderer", "prime", "seeker"],
   },
   tier: {
     type: Number,
