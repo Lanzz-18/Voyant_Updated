@@ -167,3 +167,121 @@ class MapLocation {
   }
 }
 
+class GeoTriggerService {
+  static const String _baseUrl = 'http://localhost:3000/api/quest-triggers';
+  static const Duration _checkInterval = Duration(seconds: 5); // checks every 5 seconds 
+  // only detects triggers that are within a 100m range 
+  static const double _triggerRadius = 100.0; 
+  
+  //runs repeated checks 
+  Timer? _locationCheckTimer;
+  final String userId;
+  final Function(List<QuestTrigger>) onTriggersFound; //UI trigger display 
+  final Function(QuestTrigger) onTriggerActivated;
+  
+  // preventing dulicate triggers ( by caching it )
+  final Set<String> _activeTriggerIds = {};
+  final Set<String> _activatedTriggerIds = {};
+
+  GeoTriggerService({
+    required this.userId,
+    required this.onTriggersFound,
+    required this.onTriggerActivated,
+  });
+
+//location monitoring when started will repeatedly check the user location every 5 seconds 
+//it can be canclled as well to stop monitoring ( for performance and api token preservation)
+  void startLocationMonitoring() {
+    _locationCheckTimer?.cancel();
+    _locationCheckTimer = Timer.periodic(_checkInterval, (_) {
+      _checkForNearbyTriggers();
+    });
+  }
+
+  void stopLocationMonitoring() {
+    _locationCheckTimer?.cancel();
+  }
+
+    
+  Future<void> _checkForNearbyTriggers() async {
+    try {
+      // get current user location 
+      final currentLocation = await _getCurrentUserLocation();
+      if (currentLocation == null) return;
+
+      final response = await http.get(
+        Uri.parse('$_baseUrl/nearby')
+            .replace(queryParameters: {
+          'userId': userId,
+          'lat': currentLocation!.lat.toString(),
+          'lng': currentLocation!.lng.toString(),
+          'radius': _triggerRadius.toString(),
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> triggersJson = data['triggers'];
+        final triggers = triggersJson
+            .map((json) => QuestTrigger.fromJson(json))
+            .toList();
+
+        // filter for new triggers and avoiding duplicates
+        final newTriggers = triggers.where((trigger) {
+          return !_activeTriggerIds.contains(trigger.id) &&
+              !_activatedTriggerIds.contains(trigger.id);
+        }).toList();
+
+        if (newTriggers.isNotEmpty) {
+          // add to active triggers to the UI
+          for (final trigger in newTriggers) {
+            _activeTriggerIds.add(trigger.id);
+          }
+          
+          onTriggersFound(newTriggers);
+        }
+      }
+    } catch (e) {
+      debugPrint('There was an error checking nearby triggers: $e');
+    }
+  }
+
+  Future<void> activateTrigger(QuestTrigger trigger) async {
+    try {
+      final currentLocation = await _getCurrentUserLocation();
+      if (currentLocation == null) return;
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/activate'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        //backend verification for if user is close enough -> trigger becomes valid 
+        body: json.encode({
+          'userId': userId,
+          'triggerId': trigger.id,
+          'userLocation': {
+            'lat': currentLocation!.lat,
+            'lng': currentLocation.lng,
+          },
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // move triggers from active to activated 
+        _activeTriggerIds.remove(trigger.id);
+        _activatedTriggerIds.add(trigger.id);
+        
+        onTriggerActivated(trigger);
+      }
+    } catch (e) {
+      debugPrint('Error activating trigger: $e');
+    }
+  }
+
+}
