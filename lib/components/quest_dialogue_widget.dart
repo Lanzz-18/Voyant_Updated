@@ -29,4 +29,43 @@ class _QuestDialogueWidgetState extends State<QuestDialogueWidget>
   final TextEditingController _referenceController = TextEditingController();
   bool _showReferenceInput = false;
     
+    @override
+//to run when the widget is created 
+  void initState() {
+    super.initState();
+    
+    //animation duration 
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800), 
+      vsync: this,
+    );
+
+    //will fade from invisible to visible 
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeInOut), //only runs in the first 60% of the animation 
+    ));
+
+    //slightly below to visible range 
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.3, 1.0, curve: Curves.easeOutCubic), //ensures that it starts a bit later than the fade's start 
+    ));
+
+    _animationController.forward();
+  }
+
+//preventing memory leaks 
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _referenceController.dispose();
+    super.dispose();
+  }
     }
