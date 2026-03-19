@@ -240,6 +240,26 @@ async function validateTaskAnswer(task, body) {
       return { passed: true };
     }
 
+    case "multiple_choice": {
+      const correct = task.multipleChoiceData.correctAnswer
+        .toLowerCase()
+        .trim();
+      const given = (body.answer || "").toLowerCase().trim();
+      if (given !== correct) {
+        return { passed: false, reason: "Wrong answer, try again" };
+      }
+      return { passed: true };
+    }
+
+    case "true_false": {
+      // body = { answer: true } or { answer: false }
+      const given = body.answer === true || body.answer === "true";
+      if (given !== task.trueFalseData.correctAnswer) {
+        return { passed: false, reason: "Wrong answer, try again" };
+      }
+      return { passed: true };
+    }
+
     case "photo": {
     }
     case "checkin":
