@@ -4,6 +4,7 @@ import 'package:voyant/blocs/authentication_bloc/authentication_bloc.dart';
 import 'package:voyant/screens/map/map.dart';
 import 'package:voyant/screens/avatar/views/avatar_screen.dart';
 import 'package:voyant/screens/classes/views/classScreen.dart';
+import 'package:voyant/screens/leaderboard/leaderboard_screen.dart';
 
 
 class Homescreen extends StatelessWidget {
@@ -14,6 +15,16 @@ class Homescreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         actions: [
+          IconButton(
+            icon: const Icon(Icons.leaderboard),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const LeaderboardScreen(),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
