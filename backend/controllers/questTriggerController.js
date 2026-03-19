@@ -136,3 +136,37 @@ exports.activateTrigger = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+//get triggers for quest ( testing )
+exports.getQuestTriggers = async (req, res) => {
+  try {
+    const { subQuestId } = req.params;
+    
+    const triggers = await QuestTrigger.find({
+      subQuestId,
+      isActive: true
+    }).populate('subQuestId');
+    
+    res.json(triggers);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+//calculating distance (haversine formula)
+function calculateDistance(lat1, lon1, lat2, lon2) { //;at1 and lon1 - first coordinates, lat2 and lon2 - second coordinates 
+  const R = 6371e3; //earths radius 
+  //convert degrees to radians 
+  const φ1 = lat1 * Math.PI/180; 
+  const φ2 = lat2 * Math.PI/180;
+  //calculating differences 
+  const Δφ = (lat2-lat1) * Math.PI/180;
+  const Δλ = (lon2-lon1) * Math.PI/180;
+
+  //haversine formula 
+  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+          Math.cos(φ1) * Math.cos(φ2) *
+          Math.sin(Δλ/2) * Math.sin(Δλ/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+  return R * c; //the distance in meters
