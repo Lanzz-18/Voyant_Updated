@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 // ============================================================
 // DATA MODEL
@@ -39,37 +41,87 @@ class SkillTreeScreen extends StatefulWidget {
 
 class _SkillTreeScreenState extends State<SkillTreeScreen>
     with SingleTickerProviderStateMixin {
+  // ── API ────────────────────────────────────────────────────
+  static const String baseUrl = 'http://10.0.2.2:3000/api';
+
   // ── State ──────────────────────────────────────────────────
   int _skillPoints = 10;
   int _branchIndex = 0;
+  bool isLoading = true;
+  String? error;
 
   // Unlock thresholds
   static const int _t2need = 2;
   static const int _t3need = 2;
 
   // ── Branch metadata ────────────────────────────────────────
-  final List<String> _branches = ['explorer', 'warrior', 'mage', 'rogue'];
+  final List<String> _branches = ['seeker', 'trailblazer', 'wanderer', 'prime'];
 
   static const Map<String, Color> _color = {
-    'explorer': Color(0xFF7C3AED),
-    'warrior':  Color(0xFFE05252),
-    'mage':     Color(0xFF52B5E0),
-    'rogue':    Color(0xFF4CAF50),
+    'seeker': Color(0xFF7C3AED),
+    'trailblazer': Color(0xFFE05252),
+    'wanderer': Color(0xFF52B5E0),
+    'prime': Color(0xFF4CAF50),
   };
 
   static const Map<String, IconData> _branchIcon = {
-    'explorer': Icons.search_rounded,
-    'warrior':  Icons.shield_outlined,
-    'mage':     Icons.auto_fix_high_rounded,
-    'rogue':    Icons.flash_on_rounded,
+    'seeker': Icons.search_rounded,
+    'trailblazer': Icons.directions_run_rounded,
+    'wanderer': Icons.explore_rounded,
+    'prime': Icons.storefront_rounded,
   };
 
   static const Map<String, String> _branchName = {
-    'explorer': 'Explorer',
-    'warrior':  'Warrior',
-    'mage':     'Mage',
-    'rogue':    'Rogue',
+    'seeker': 'Seeker',
+    'trailblazer': 'Trailblazer',
+    'wanderer': 'Wanderer',
+    'prime': 'Prime',
   };
+
+  // ── Icon mapping from string names ──────────────────────────
+  static const Map<String, IconData> _iconMap = {
+    'visibility_rounded': Icons.visibility_rounded,
+    'auto_awesome_rounded': Icons.auto_awesome_rounded,
+    'lock_rounded': Icons.lock_rounded,
+    'timer_rounded': Icons.timer_rounded,
+    'directions_run_rounded': Icons.directions_run_rounded,
+    'skip_next_rounded': Icons.skip_next_rounded,
+    'add_circle_rounded': Icons.add_circle_rounded,
+    'explore_rounded': Icons.explore_rounded,
+    'storefront_rounded': Icons.storefront_rounded,
+    'search_rounded': Icons.search_rounded,
+    'shield_outlined': Icons.shield_outlined,
+    'auto_fix_high_rounded': Icons.auto_fix_high_rounded,
+    'flash_on_rounded': Icons.flash_on_rounded,
+    'map_rounded': Icons.map_rounded,
+    'timeline_rounded': Icons.timeline_rounded,
+    'layers_rounded': Icons.layers_rounded,
+    'diamond_rounded': Icons.diamond_rounded,
+    'public_rounded': Icons.public_rounded,
+    'sports_mma_rounded': Icons.sports_mma_rounded,
+    'backpack_rounded': Icons.backpack_rounded,
+    'military_tech_rounded': Icons.military_tech_rounded,
+    'health_and_safety_rounded': Icons.health_and_safety_rounded,
+    'campaign_rounded': Icons.campaign_rounded,
+    'local_fire_department_rounded': Icons.local_fire_department_rounded,
+    'emoji_events_rounded': Icons.emoji_events_rounded,
+    'menu_book_rounded': Icons.menu_book_rounded,
+    'psychology_rounded': Icons.psychology_rounded,
+    'flare_rounded': Icons.flare_rounded,
+    'remove_red_eye_rounded': Icons.remove_red_eye_rounded,
+    'stars_rounded': Icons.stars_rounded,
+    'lightbulb_rounded': Icons.lightbulb_rounded,
+    'inventory_rounded': Icons.inventory_rounded,
+    'alarm_rounded': Icons.alarm_rounded,
+    'touch_app_rounded': Icons.touch_app_rounded,
+    'visibility_off_rounded': Icons.visibility_off_rounded,
+    'nights_stay_rounded': Icons.nights_stay_rounded,
+    'blur_on_rounded': Icons.blur_on_rounded,
+  };
+
+  IconData _stringToIcon(String iconName) {
+    return _iconMap[iconName] ?? Icons.question_mark_rounded;
+  }
 
   // ── Branch slide animation ─────────────────────────────────
   late final AnimationController _slideCtrl;
@@ -89,45 +141,52 @@ class _SkillTreeScreenState extends State<SkillTreeScreen>
     _slideAnim = Tween<Offset>(begin: Offset.zero, end: Offset.zero)
         .animate(_slideCtrl);
 
-    _nodes = [
-      // ── Explorer ────────────────────────────────────────
-      SkillNode(id: 'e1a', label: 'Keen Eye',       description: 'Spot hidden clues faster',              icon: Icons.visibility_rounded,            tier: 1, branch: 'explorer', state: NodeState.available),
-      SkillNode(id: 'e1b', label: 'Scout',           description: 'Expand your map reveal radius',         icon: Icons.explore_rounded,               tier: 1, branch: 'explorer', state: NodeState.available),
-      SkillNode(id: 'e2a', label: 'Pathfinder',      description: 'Reveal nearby points of interest',      icon: Icons.map_rounded,                   tier: 2, branch: 'explorer', state: NodeState.locked),
-      SkillNode(id: 'e2b', label: 'Tracker',         description: 'Follow quest trails more easily',       icon: Icons.timeline_rounded,              tier: 2, branch: 'explorer', state: NodeState.locked),
-      SkillNode(id: 'e2c', label: 'Cartographer',    description: 'Auto-fill explored area maps',          icon: Icons.layers_rounded,                tier: 2, branch: 'explorer', state: NodeState.locked),
-      SkillNode(id: 'e3a', label: 'Treasure Hunter', description: 'Unlock rare hidden quests',             icon: Icons.diamond_rounded,               tier: 3, branch: 'explorer', state: NodeState.locked),
-      SkillNode(id: 'e3b', label: 'Wayfinder',       description: 'Reveal all undiscovered zones',         icon: Icons.public_rounded,                tier: 3, branch: 'explorer', state: NodeState.locked),
+    _nodes = [];
+    _loadSkills();
+  }
 
-      // ── Warrior ─────────────────────────────────────────
-      SkillNode(id: 'w1a', label: 'Iron Will',       description: 'Resist quest time penalties',           icon: Icons.sports_mma_rounded,            tier: 1, branch: 'warrior',  state: NodeState.available),
-      SkillNode(id: 'w1b', label: 'Endurance',       description: 'Carry more quest items',                icon: Icons.backpack_rounded,              tier: 1, branch: 'warrior',  state: NodeState.available),
-      SkillNode(id: 'w2a', label: 'Challenger',      description: 'Bonus XP on hard quests',               icon: Icons.military_tech_rounded,         tier: 2, branch: 'warrior',  state: NodeState.locked),
-      SkillNode(id: 'w2b', label: 'Fortitude',       description: 'Reduce failure penalty by 50%',         icon: Icons.health_and_safety_rounded,     tier: 2, branch: 'warrior',  state: NodeState.locked),
-      SkillNode(id: 'w2c', label: 'Battle Cry',      description: 'Boost group XP for 10 minutes',         icon: Icons.campaign_rounded,              tier: 2, branch: 'warrior',  state: NodeState.locked),
-      SkillNode(id: 'w3a', label: 'Berserker',       description: 'Double XP when on a streak',            icon: Icons.local_fire_department_rounded, tier: 3, branch: 'warrior',  state: NodeState.locked),
-      SkillNode(id: 'w3b', label: 'Conqueror',       description: 'Unlock elite challenge quests',         icon: Icons.emoji_events_rounded,          tier: 3, branch: 'warrior',  state: NodeState.locked),
+  Future<void> _loadSkills() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/skills'),
+      );
 
-      // ── Mage ────────────────────────────────────────────
-      SkillNode(id: 'm1a', label: 'Arcane Sense',    description: 'Detect hidden lore fragments',          icon: Icons.auto_awesome_rounded,          tier: 1, branch: 'mage',     state: NodeState.available),
-      SkillNode(id: 'm1b', label: 'Insight',         description: 'Get extra hints on puzzles',            icon: Icons.lightbulb_rounded,             tier: 1, branch: 'mage',     state: NodeState.available),
-      SkillNode(id: 'm2a', label: 'Lore Keeper',     description: 'Unlock historical trivia quests',       icon: Icons.menu_book_rounded,             tier: 2, branch: 'mage',     state: NodeState.locked),
-      SkillNode(id: 'm2b', label: 'Mind Shield',     description: 'Ignore one wrong answer per quest',     icon: Icons.psychology_rounded,            tier: 2, branch: 'mage',     state: NodeState.locked),
-      SkillNode(id: 'm2c', label: 'Spellbind',       description: 'Enchant items for bonus effects',       icon: Icons.flare_rounded,                 tier: 2, branch: 'mage',     state: NodeState.locked),
-      SkillNode(id: 'm3a', label: 'Oracle',          description: 'Preview quest outcomes before accepting', icon: Icons.remove_red_eye_rounded,      tier: 3, branch: 'mage',     state: NodeState.locked),
-      SkillNode(id: 'm3b', label: 'Archmage',        description: 'Unlock secret arcane quest chains',     icon: Icons.stars_rounded,                 tier: 3, branch: 'mage',     state: NodeState.locked),
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        final loadedNodes = data.map((skill) {
+          return SkillNode(
+            id: skill['skillId'],
+            label: skill['label'],
+            description: skill['description'],
+            icon: _stringToIcon(skill['icon']),
+            tier: skill['tier'],
+            branch: skill['branch'],
+            state: skill['state'] == 'unlocked'
+                ? NodeState.unlocked
+                : skill['state'] == 'available'
+                    ? NodeState.available
+                    : NodeState.locked,
+          );
+        }).toList();
 
-      // ── Rogue ────────────────────────────────────────────
-      SkillNode(id: 'r1a', label: 'Shadow Step',     description: 'Move between zones undetected',         icon: Icons.directions_run_rounded,        tier: 1, branch: 'rogue',    state: NodeState.available),
-      SkillNode(id: 'r1b', label: 'Quick Hands',     description: 'Solve interaction puzzles faster',      icon: Icons.touch_app_rounded,             tier: 1, branch: 'rogue',    state: NodeState.available),
-      SkillNode(id: 'r2a', label: 'Ambush',          description: 'Surprise bonus on timed quests',        icon: Icons.alarm_rounded,                 tier: 2, branch: 'rogue',    state: NodeState.locked),
-      SkillNode(id: 'r2b', label: 'Pickpocket',      description: 'Find bonus loot in any location',       icon: Icons.inventory_rounded,             tier: 2, branch: 'rogue',    state: NodeState.locked),
-      SkillNode(id: 'r2c', label: 'Vanish',          description: 'Skip one mandatory quest penalty',      icon: Icons.visibility_off_rounded,        tier: 2, branch: 'rogue',    state: NodeState.locked),
-      SkillNode(id: 'r3a', label: 'Assassin',        description: 'Complete stealth quests for rare rewards', icon: Icons.nights_stay_rounded,        tier: 3, branch: 'rogue',    state: NodeState.locked),
-      SkillNode(id: 'r3b', label: 'Ghost',           description: 'Invisible to all zone restrictions',    icon: Icons.blur_on_rounded,               tier: 3, branch: 'rogue',    state: NodeState.locked),
-    ];
-
-    _recalc();
+        setState(() {
+          _nodes = loadedNodes;
+          isLoading = false;
+        });
+        _recalc();
+      } else {
+        setState(() {
+          error = 'Failed to load skills: ${response.statusCode}';
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading skills: $e');
+      setState(() {
+        error = 'Connection error: $e';
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -281,6 +340,24 @@ class _SkillTreeScreenState extends State<SkillTreeScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0D0A1E),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF7C3AED)),
+        ),
+      );
+    }
+
+    if (error != null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0D0A1E),
+        body: Center(
+          child: Text(error!, style: const TextStyle(color: Colors.white)),
+        ),
+      );
+    }
+
     final branch = _branches[_branchIndex];
     final c      = _color[branch]!;
     final bName  = _branchName[branch]!;
