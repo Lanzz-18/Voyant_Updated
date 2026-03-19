@@ -90,3 +90,49 @@ exports.checkNearbyTriggers = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+//triggering a quest when user enters the quest zone 
+exports.activateTrigger = async (req, res) => {
+  try {
+    const { userId, triggerId, userLocation } = req.body;
+    
+
+    //finding the trigger
+    const trigger = await QuestTrigger.findById(triggerId).populate('subQuestId');
+    
+    if (!trigger || !trigger.isActive) {
+      return res.status(404).json({ message: "Trigger not found/innactive" });
+    }
+    const alreadyTriggered = trigger.triggeredBy.some(
+      t => t.userId === userId
+    );
+    
+    if (trigger.triggerOnce && alreadyTriggered) {
+      return res.status(409).json({ message: "Trigger has been already activated" });
+    }
+    
+    //saving trigger activation 
+    trigger.triggeredBy.push({
+      userId,
+      triggeredAt: new Date()
+    });
+    
+    await trigger.save();
+    
+    //execute it and enable frontend to work 
+    const result = await executeTriggerActions(trigger, userId, userLocation);
+    
+    res.json({
+      message: "Trigger has been activated",
+      trigger: {
+        id: trigger._id,
+        type: trigger.triggerType,
+        location: trigger.location
+      },
+      result
+    });
+    
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
