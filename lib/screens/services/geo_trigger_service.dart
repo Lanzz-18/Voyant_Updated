@@ -248,7 +248,7 @@ class GeoTriggerService {
         }
       }
     } catch (e) {
-      debugPrint('There was an error checking nearby triggers: $e');
+      debugPrint('Error found when checking nearby triggers: $e');
     }
   }
 
