@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class QuestTrigger {
   final String id; //refers to the id of the specific trigger 
@@ -284,4 +286,55 @@ class GeoTriggerService {
     }
   }
 
+
+  Future<MapLocation?> _getCurrentUserLocation() async {
+    try {
+      //checks if live service is enabled and if not it returns null and stops execution 
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        debugPrint('Location services are disabled.');
+        return null;
+      }
+
+      //chcks for location perms 
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          debugPrint('Location permissions are denied');
+          return null;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        debugPrint('Location permissions have been denied');
+        return null;
+      }
+
+      //getting current position 
+      //this is a more accurate fetch since location accuracy is set to high , hence there can be higher battery usage
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+
+      debugPrint('Current location: ${position.latitude}, ${position.longitude}'); //cords are printed in the console
+      
+      return MapLocation(
+        lat: position.latitude,
+        lng: position.longitude,
+      );
+    } catch (e) {
+      debugPrint('Error getting location: $e');
+      
+      //prevents failing ( stops the app from crashing)
+      debugPrint('fallback location: Galle Fort');
+      return MapLocation(lat: 6.0236, lng: 80.2172);
+    }
+  }
+
+  void clearCache() {
+    _activeTriggerIds.clear();
+    _activatedTriggerIds.clear();
+  }
 }
