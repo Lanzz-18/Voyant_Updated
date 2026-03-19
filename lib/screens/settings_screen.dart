@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'components/settings_tile.dart';
 import 'account_settings_screen.dart';
 import 'notification_settings_screen.dart';
+import 'appearance_settings_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -84,6 +85,13 @@ class SettingsScreen extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const NotificationSettingsScreen(),
+                              ),
+                            );
+                          } else if (title == "Appearance") {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AppearanceSettingsScreen(),
                               ),
                             );
                           }
