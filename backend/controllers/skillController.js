@@ -85,3 +85,21 @@ exports.deleteSkill = async (req, res) => {
     return res.status(400).json({ message: err.message });
   }
 };
+
+exports.getAllClasses = async (req, res) => {
+  try {
+    const classes = await SkillClass.find();
+    return res.json(classes);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getSkillsForClass = async (req, res) => {
+  try {
+    const skills = await Skill.find({ classId: req.params.classId });
+    return res.json(skills);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
