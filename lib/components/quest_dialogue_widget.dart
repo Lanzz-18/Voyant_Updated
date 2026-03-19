@@ -188,8 +188,160 @@ void _handleChoice(DialogueOption option) {
                     ),
             ),
           ),
-        
+
+          const SizedBox(width: 20),
+          
+          
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                //npc name 
+                Text(
+                  widget.dialogueNode.npcName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                //npc role 
+                Text(
+                  'NPCs role',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
+
+//build for the dialogue box ( called/referenced earlier)
+  Widget _buildDialogueBox() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF4A148C).withOpacity(0.3),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.purple.withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            widget.dialogueNode.dialogueText, //gets the dialogue text 
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              height: 1.4,
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          //inputs ( references)
+          if (_showReferenceInput)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: TextField(
+                controller: _referenceController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Enter the reference code...',
+                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.purple.withOpacity(0.5)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.purple.withOpacity(0.5)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF4A148C)),
+                  ),
+                ),
+              ),
+            ),
+          
+          ...widget.dialogueNode.options.map((option) => _buildOption(option)),
+        ],
+      ),
+    );
+  }
+
+
+  Widget _buildOption(DialogueOption option) {
+    //check - if the option needs a different type of extra input ( like a referral code )
+    final isReferenceOption = option.conditions.requiresReference;
+    final showInput = _showReferenceInput && isReferenceOption;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ElevatedButton( //clickable button 
+        onPressed: widget.isProcessing ? null : () { //if processing is true then button is disabled preventing spam
+          if (showInput) {
+            _submitReferenceChoice(option);
+          } else {
+            _handleChoice(option);
+          }
+        },
+        //button styling  
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.purple.withOpacity(0.2),
+          foregroundColor: Colors.white,
+          side: BorderSide(
+            color: Colors.purple.withOpacity(0.5),
+            width: 1,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                option.text,
+                style: const TextStyle(
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            if (widget.isProcessing && showInput)
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+        
+       
