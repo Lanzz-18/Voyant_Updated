@@ -28,7 +28,7 @@ const galleMainQuest = {
 //Sub Quest 01  - Meeting Guild Master 
 const meetingGuildmasterSubQuest = {
   title: "Meeting the Guildmaster",
-  description: "Meet Thorvald, the Guildmaster of Galle, and introduce yourself to the Adventurers Guild.",
+  description: "Meet Thorvald, the Guildmaster of Galle, introduce yourself to the Adventurers Guild.",
   questOrder: 1,
   location: {
     name: "Adventurers Guild - Galle",
@@ -103,7 +103,7 @@ const meetingGuildmasterSubQuest = {
     {
       id: "referral_response",
       npcName: "Thorvald",
-      npcAvatar: "https://example.com/npc/thorvald-portrait.png",
+      npcAvatar: " ",
       dialogueText: "Oh ho, so you were recommended by them. That's wonderful! Any friend of theirs is a friend of mine.",
       emotion: "happy",
       isAutoAdvance: false,
@@ -127,7 +127,7 @@ const meetingGuildmasterSubQuest = {
     {
       id: "no_referral_response",
       npcName: "Thorvald",
-      npcAvatar: "https://example.com/npc/thorvald-portrait.png",
+      npcAvatar: " ",
       dialogueText: "Oh no worries, no worries. I was just a tad curious. It takes courage to venture out on your own!",
       emotion: "neutral",
       isAutoAdvance: false,
@@ -166,3 +166,81 @@ const meetingGuildmasterSubQuest = {
     requiredFlags: []
   }
 };
+
+//inserting info into mongoDB
+async function seedQuestData() {
+  try {
+    console.log("Seeding quest data...");
+
+    //creating main quest
+    const mainQuest = new MainQuest(galleMainQuest);
+    const savedMainQuest = await mainQuest.save();
+    console.log("Created main quest:", savedMainQuest.title);
+
+    //creating sub-quest connected to the main quest
+    const subQuestData = {
+      ...meetingGuildmasterSubQuest,
+      mainQuestId: savedMainQuest._id
+    };
+    
+    const subQuest = new SubQuest(subQuestData);
+    const savedSubQuest = await subQuest.save();
+    console.log("Created sub-quest:", savedSubQuest.title);
+
+    //creating quest trigger for guildmaster location
+    const guildmasterTrigger = new QuestTrigger({
+      subQuestId: savedSubQuest._id,
+      triggerType: 'location',
+      location: {
+        name: "Adventurers Guild - Galle",
+        coordinates: {
+          lat: 6.0236,
+          lng: 80.2172
+        },
+        radius: 50, 
+        address: "Galle Fort, Galle, Sri Lanka",
+        description: "The Guildmaster awaits"
+      },
+      conditions: {
+        requiredLevel: 1,
+        requiredItems: [],
+        requiredFlags: []
+      },
+      triggerOnce: true,
+      isActive: true,
+      actions: {
+        startQuest: true,
+        showNotification: {
+          title: "Quest Available!",
+          message: "Meet Thorvald, the Guildmaster of Galle",
+          icon: "quest_marker"
+        },
+        spawnNPC: {
+          name: "Thorvald",
+          avatar: " ", 
+          location: {
+            lat: 6.0236,
+            lng: 80.2172
+          }
+        }
+      },
+      priority: 10,
+      category: 'main_quest'
+    });
+
+    const savedTrigger = await guildmasterTrigger.save();
+    console.log("Created quest trigger:", savedTrigger.location.name);
+
+    console.log("Quest data seeded successfully!");
+    return { 
+      mainQuest: savedMainQuest, 
+      subQuest: savedSubQuest,
+      trigger: savedTrigger
+    };
+  } catch (error) {
+    console.error("Error seeding quest data:", error);
+    throw error;
+  }
+}
+
+module.exports = { seedQuestData };
