@@ -262,6 +262,11 @@ async function awardXP(userId, xp) {
   await db.runTransaction(async (t) => {
     const doc = await t.get(userRef);
     const current = doc.exists ? doc.data().totalXP || 0 : 0;
+
+    // calculate new SP — 1 SP per 100 XP earned
+    const newTotalXP = currentXP + xp;
+    const newTotalSP = Math.floor(newTotalXP / 100);
+
     t.set(userRef, { totalXP: current + xp }, { merge: true });
   });
 }
