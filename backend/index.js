@@ -12,6 +12,8 @@ const userSkillRoutes = require("./routes/userSkillsRoutes");
 const userTripRoutes = require("./routes/userTripRoutes");
 const userRewardRoutes = require("./routes/userRewardRoutes");
 const messageLogRoutes = require("./routes/messageLogRoutes");
+const mainQuestRoutes = require("./routes/mainQuestRoutes");
+const questTriggerRoutes = require("./routes/questTriggerRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +30,8 @@ app.use("/api/user-skills", userSkillRoutes);
 app.use("/api/user-trips", userTripRoutes);
 app.use("/api/rewards", userRewardRoutes);
 app.use("/api/messages", messageLogRoutes);
+app.use("/api/main-quests", mainQuestRoutes);
+app.use("/api/quest-triggers", questTriggerRoutes);
 
 async function startApp() {
   await connectToDatabase();
