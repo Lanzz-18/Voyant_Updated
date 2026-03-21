@@ -1,5 +1,14 @@
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
+
+// Fallback for development
+process.env.MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://voyantAdmin:1VfeLDAFCQU84yJ7@voyant.y7zwi17.mongodb.net/voyant';
+process.env.PORT = process.env.PORT || '3000';
+
+if (!process.env.MONGO_URI) {
+  throw new Error("MONGO_URI missing. Put it in backend/.env (same folder as index.js).");
+}
 // Imports
-require("dotenv").config();
 require("./firebase/firebaseAdmin");
 
 const express = require("express");
