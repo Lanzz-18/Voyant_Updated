@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:user_repository/user_repository.dart';
+import 'package:voyant/blocs/account_settings_bloc/account_settings_bloc.dart';
 import 'package:voyant/widgets/animated_gradient_background.dart';
 import 'dart:io';
 
@@ -18,13 +18,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   late TextEditingController _nameController;
   late TextEditingController _bioController;
   late TextEditingController _locationController;
+  late TextEditingController _currentPasswordController;
+  late TextEditingController _newPasswordController;
+  late TextEditingController _confirmPasswordController;
 
   File? _profileImage;
   final ImagePicker _picker = ImagePicker();
-  bool _locationSharingEnabled = true;
-  bool _twoFactorEnabled = false;
-  bool _biometricLoginEnabled = false;
-  List<String> _loginSessions = ['Current Device'];
 
   @override
   void initState() {
@@ -32,6 +31,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     _nameController = TextEditingController();
     _bioController = TextEditingController();
     _locationController = TextEditingController();
+    _currentPasswordController = TextEditingController();
+    _newPasswordController = TextEditingController();
+    _confirmPasswordController = TextEditingController();
     _loadUserData();
   }
 
@@ -39,7 +41,6 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     final firebaseUser = FirebaseAuth.instance.currentUser;
     if (firebaseUser != null) {
       // Load profile data from Firestore via BLoC
-      // For now, using placeholder data
       setState(() {
         _nameController.text = firebaseUser.displayName ?? '';
         _bioController.text = '';
@@ -53,6 +54,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     _nameController.dispose();
     _bioController.dispose();
     _locationController.dispose();
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -62,14 +66,15 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       setState(() {
         _profileImage = File(image.path);
       });
+      if (mounted) {
+        context.read<AccountSettingsBloc>().add(
+          UploadProfileImageEvent(File(image.path)),
+        );
+      }
     }
   }
 
   Future<void> _changePassword() async {
-    TextEditingController currentPasswordController = TextEditingController();
-    TextEditingController newPasswordController = TextEditingController();
-    TextEditingController confirmPasswordController = TextEditingController();
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -83,7 +88,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                controller: currentPasswordController,
+                controller: _currentPasswordController,
                 obscureText: true,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
@@ -96,7 +101,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               ),
               const SizedBox(height: 12),
               TextField(
-                controller: newPasswordController,
+                controller: _newPasswordController,
                 obscureText: true,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
@@ -109,7 +114,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               ),
               const SizedBox(height: 12),
               TextField(
-                controller: confirmPasswordController,
+                controller: _confirmPasswordController,
                 obscureText: true,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
@@ -128,39 +133,26 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               child: const Text('Cancel', style: TextStyle(color: Colors.white)),
             ),
             TextButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                try {
+              onPressed: () {
+                if (_newPasswordController.text == _confirmPasswordController.text) {
+                  Navigator.pop(context);
                   final user = FirebaseAuth.instance.currentUser;
-                  if (user != null && user.email != null) {
-                    // Re-authenticate user
-                    final credential = EmailAuthProvider.credential(
-                      email: user.email!,
-                      password: currentPasswordController.text,
-                    );
-                    await user.reauthenticateWithCredential(credential);
-
-                    // Update password
-                    await user.updatePassword(newPasswordController.text);
-
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Password changed successfully!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    }
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error: ${e.toString()}'),
-                        backgroundColor: Colors.red,
+                  if (user?.email != null) {
+                    context.read<AccountSettingsBloc>().add(
+                      ChangePasswordEvent(
+                        email: user!.email!,
+                        currentPassword: _currentPasswordController.text,
+                        newPassword: _newPasswordController.text,
                       ),
                     );
                   }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Passwords do not match'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
                 }
               },
               child: const Text('Update', style: TextStyle(color: Colors.cyanAccent)),
@@ -239,37 +231,16 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               child: const Text('Cancel', style: TextStyle(color: Colors.white)),
             ),
             TextButton(
-              onPressed: () async {
+              onPressed: () {
                 Navigator.pop(context);
-                try {
-                  final user = FirebaseAuth.instance.currentUser;
-                  if (user != null) {
-                    // Delete user document from Firestore
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(user.uid)
-                        .delete();
-                    // Delete Firebase Auth user
-                    await user.delete();
-                    if (mounted) {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Account deleted successfully'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error: ${e.toString()}'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
+                final user = FirebaseAuth.instance.currentUser;
+                if (user?.email != null) {
+                  context.read<AccountSettingsBloc>().add(
+                    DeleteAccountEvent(
+                      email: user!.email!,
+                      password: '', // User will be prompted via re-authentication
+                    ),
+                  );
                 }
               },
               child: const Text('Delete', style: TextStyle(color: Colors.red)),
@@ -280,37 +251,19 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     );
   }
 
-  void _saveChanges() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        // Update display name
-        await user.updateDisplayName(_nameController.text);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account settings saved successfully!'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error saving changes: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+  void _saveChanges() {
+    context.read<AccountSettingsBloc>().add(
+      UpdateProfileEvent(
+        displayName: _nameController.text,
+        bio: _bioController.text,
+        location: _locationController.text,
+      ),
+    );
   }
 
   void _downloadPersonalData() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Starting personal data download...'),
-        backgroundColor: Colors.blue,
-      ),
+    context.read<AccountSettingsBloc>().add(
+      const DownloadPersonalDataEvent(),
     );
   }
 
@@ -318,333 +271,431 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: AnimatedGradientBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const Text(
-                      'Account Settings',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
+      body: BlocListener<AccountSettingsBloc, AccountSettingsState>(
+        listener: (context, state) {
+          // Handle state changes
+          if (state.status == AccountSettingsStatus.success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Changes saved successfully!'),
+                backgroundColor: Colors.green,
               ),
+            );
+          } else if (state.status == AccountSettingsStatus.failure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: ${state.errorMessage ?? "Unknown error"}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          } else if (state.status == AccountSettingsStatus.accountDeleted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Account deleted successfully'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          }
+        },
+        child: AnimatedGradientBackground(
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const Text(
+                        'Account Settings',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
-              // Content
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      children: [
-                        // Profile Section
-                        _buildSectionCard(
-                          title: 'Profile',
-                          icon: Icons.person,
-                          children: [
-                            GestureDetector(
-                              onTap: _pickProfileImage,
-                              child: Column(
+                // Content
+                Expanded(
+                  child: Stack(
+                    children: [
+                      SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            children: [
+                              // Profile Section
+                              _buildSectionCard(
+                                title: 'Profile',
+                                icon: Icons.person,
                                 children: [
-                                  Container(
-                                    width: 100,
-                                    height: 100,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.cyanAccent,
-                                        width: 3,
-                                      ),
-                                      image: _profileImage != null
-                                          ? DecorationImage(
-                                              image: FileImage(_profileImage!),
-                                              fit: BoxFit.cover,
-                                            )
-                                          : null,
+                                  GestureDetector(
+                                    onTap: _pickProfileImage,
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          width: 100,
+                                          height: 100,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.cyanAccent,
+                                              width: 3,
+                                            ),
+                                            image: _profileImage != null
+                                                ? DecorationImage(
+                                                    image: FileImage(_profileImage!),
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                : null,
+                                          ),
+                                          child: _profileImage == null
+                                              ? const Icon(
+                                                  Icons.person,
+                                                  size: 50,
+                                                  color: Colors.white,
+                                                )
+                                              : null,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        const Text(
+                                          'Tap to change profile picture',
+                                          style: TextStyle(
+                                            color: Colors.cyanAccent,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    child: _profileImage == null
-                                        ? const Icon(
-                                            Icons.person,
-                                            size: 50,
-                                            color: Colors.white,
-                                          )
-                                        : null,
                                   ),
-                                  const SizedBox(height: 8),
-                                  const Text(
-                                    'Tap to change profile picture',
-                                    style: TextStyle(
-                                      color: Colors.cyanAccent,
-                                      fontSize: 12,
-                                    ),
+                                  const SizedBox(height: 16),
+                                  _buildTextField(
+                                    label: 'Display Name',
+                                    controller: _nameController,
+                                    icon: Icons.person,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildTextField(
+                                    label: 'Bio',
+                                    controller: _bioController,
+                                    icon: Icons.description,
+                                    maxLines: 3,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildTextField(
+                                    label: 'Location',
+                                    controller: _locationController,
+                                    icon: Icons.location_on,
                                   ),
                                 ],
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            _buildTextField(
-                              label: 'Display Name',
-                              controller: _nameController,
-                              icon: Icons.person,
-                            ),
-                            const SizedBox(height: 16),
-                            _buildTextField(
-                              label: 'Bio',
-                              controller: _bioController,
-                              icon: Icons.description,
-                              maxLines: 3,
-                            ),
-                            const SizedBox(height: 16),
-                            _buildTextField(
-                              label: 'Location',
-                              controller: _locationController,
-                              icon: Icons.location_on,
-                            ),
-                          ],
-                        ),
 
-                        const SizedBox(height: 16),
+                              const SizedBox(height: 16),
 
-                        // Authentication Section
-                        _buildSectionCard(
-                          title: 'Authentication',
-                          icon: Icons.lock,
-                          children: [
-                            _buildInfoRow(
-                              'Email',
-                              FirebaseAuth.instance.currentUser?.email ?? 'N/A',
-                            ),
-                            const SizedBox(height: 16),
-                            _buildActionButton(
-                              'Change Password',
-                              Icons.vpn_key,
-                              _changePassword,
-                            ),
-                            const SizedBox(height: 12),
-                            _buildActionButton(
-                              'Logout',
-                              Icons.logout,
-                              _logout,
-                              isDestructive: true,
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Preferences Section
-                        _buildSectionCard(
-                          title: 'Preferences',
-                          icon: Icons.tune,
-                          children: [
-                            _buildToggleTile(
-                              'Location Sharing',
-                              _locationSharingEnabled,
-                              (value) {
-                                setState(() => _locationSharingEnabled = value);
-                              },
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Security Section
-                        _buildSectionCard(
-                          title: 'Security',
-                          icon: Icons.security,
-                          children: [
-                            _buildToggleTile(
-                              'Two-Factor Authentication',
-                              _twoFactorEnabled,
-                              (value) {
-                                setState(() => _twoFactorEnabled = value);
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            _buildToggleTile(
-                              'Biometric Login',
-                              _biometricLoginEnabled,
-                              (value) {
-                                setState(() => _biometricLoginEnabled = value);
-                              },
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Account Management Section
-                        _buildSectionCard(
-                          title: 'Account Management',
-                          icon: Icons.manage_accounts,
-                          children: [
-                            _buildActionButton(
-                              'Download Personal Data',
-                              Icons.download,
-                              _downloadPersonalData,
-                            ),
-                            const SizedBox(height: 12),
-                            _buildActionButton(
-                              'Delete Account',
-                              Icons.delete_forever,
-                              _deleteAccount,
-                              isDestructive: true,
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Connected Accounts Section
-                        _buildSectionCard(
-                          title: 'Connected Accounts',
-                          icon: Icons.link,
-                          children: [
-                            const Text(
-                              'No connected accounts',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            _buildActionButton(
-                              'Link Google Account',
-                              Icons.account_circle,
-                              () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Linking Google account...'),
-                                    backgroundColor: Colors.blue,
+                              // Authentication Section
+                              _buildSectionCard(
+                                title: 'Authentication',
+                                icon: Icons.lock,
+                                children: [
+                                  _buildInfoRow(
+                                    'Email',
+                                    FirebaseAuth.instance.currentUser?.email ?? 'N/A',
                                   ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            _buildActionButton(
-                              'Link Facebook Account',
-                              Icons.facebook,
-                              () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Linking Facebook account...'),
-                                    backgroundColor: Colors.blue,
+                                  const SizedBox(height: 16),
+                                  _buildActionButton(
+                                    'Change Password',
+                                    Icons.vpn_key,
+                                    _changePassword,
                                   ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Activity Section
-                        _buildSectionCard(
-                          title: 'Activity',
-                          icon: Icons.history,
-                          children: [
-                            const Text(
-                              'Login Sessions',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                                  const SizedBox(height: 12),
+                                  _buildActionButton(
+                                    'Logout',
+                                    Icons.logout,
+                                    _logout,
+                                    isDestructive: true,
+                                  ),
+                                ],
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            ..._loginSessions
-                                .asMap()
-                                .entries
-                                .map((entry) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.05),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: Colors.cyanAccent
-                                              .withOpacity(0.3),
+
+                              const SizedBox(height: 16),
+
+                              // Preferences Section
+                              BlocBuilder<AccountSettingsBloc, AccountSettingsState>(
+                                builder: (context, state) {
+                                  return _buildSectionCard(
+                                    title: 'Preferences',
+                                    icon: Icons.tune,
+                                    children: [
+                                      _buildToggleTile(
+                                        'Location Sharing',
+                                        state.locationSharingEnabled,
+                                        (value) {
+                                          context.read<AccountSettingsBloc>().add(
+                                            UpdateLocationSharingEvent(value),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              // Security Section
+                              BlocBuilder<AccountSettingsBloc, AccountSettingsState>(
+                                builder: (context, state) {
+                                  return _buildSectionCard(
+                                    title: 'Security',
+                                    icon: Icons.security,
+                                    children: [
+                                      _buildToggleTile(
+                                        'Two-Factor Authentication',
+                                        state.twoFactorEnabled,
+                                        (value) {
+                                          context.read<AccountSettingsBloc>().add(
+                                            UpdateTwoFAEvent(value),
+                                          );
+                                        },
+                                      ),
+                                      const SizedBox(height: 12),
+                                      _buildToggleTile(
+                                        'Biometric Login',
+                                        state.biometricLoginEnabled,
+                                        (value) {
+                                          context.read<AccountSettingsBloc>().add(
+                                            UpdateBiometricEvent(value),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              // Account Management Section
+                              _buildSectionCard(
+                                title: 'Account Management',
+                                icon: Icons.manage_accounts,
+                                children: [
+                                  _buildActionButton(
+                                    'Download Personal Data',
+                                    Icons.download,
+                                    _downloadPersonalData,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildActionButton(
+                                    'Delete Account',
+                                    Icons.delete_forever,
+                                    _deleteAccount,
+                                    isDestructive: true,
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              // Connected Accounts Section
+                              _buildSectionCard(
+                                title: 'Connected Accounts',
+                                icon: Icons.link,
+                                children: [
+                                  const Text(
+                                    'No connected accounts',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildActionButton(
+                                    'Link Google Account',
+                                    Icons.account_circle,
+                                    () {
+                                      context.read<AccountSettingsBloc>().add(
+                                        const LinkSocialAccountEvent(
+                                          provider: 'google',
+                                          accessToken: '', // Would be obtained via OAuth
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildActionButton(
+                                    'Link Facebook Account',
+                                    Icons.facebook,
+                                    () {
+                                      context.read<AccountSettingsBloc>().add(
+                                        const LinkSocialAccountEvent(
+                                          provider: 'facebook',
+                                          accessToken: '', // Would be obtained via OAuth
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              // Activity Section
+                              BlocBuilder<AccountSettingsBloc, AccountSettingsState>(
+                                builder: (context, state) {
+                                  return _buildSectionCard(
+                                    title: 'Activity',
+                                    icon: Icons.history,
+                                    children: [
+                                      const Text(
+                                        'Login Sessions',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.devices_other,
-                                                color: Colors.cyanAccent,
-                                                size: 18,
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                entry.value,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 13,
+                                      const SizedBox(height: 12),
+                                      if (state.loginSessions != null && state.loginSessions!.isNotEmpty)
+                                        ...state.loginSessions!
+                                            .asMap()
+                                            .entries
+                                            .map((entry) {
+                                              final session = entry.value;
+                                              return Padding(
+                                                padding: const EdgeInsets.only(bottom: 8),
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(12),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white.withOpacity(0.05),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    border: Border.all(
+                                                      color: Colors.cyanAccent
+                                                          .withOpacity(0.3),
+                                                    ),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      Expanded(
+                                                        child: Row(
+                                                          children: [
+                                                            const Icon(
+                                                              Icons.devices_other,
+                                                              color: Colors.cyanAccent,
+                                                              size: 18,
+                                                            ),
+                                                            const SizedBox(width: 8),
+                                                            Expanded(
+                                                              child: Text(
+                                                                session['device'] ?? 'Unknown Device',
+                                                                style: const TextStyle(
+                                                                  color: Colors.white,
+                                                                  fontSize: 13,
+                                                                ),
+                                                                overflow: TextOverflow.ellipsis,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
+                                              );
+                                            })
+                                            .toList()
+                                      else
+                                        const Text(
+                                          'No sessions found',
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 13,
                                           ),
-                                        ],
+                                        ),
+                                    ],
+                                  );
+                                },
+                              ),
+
+                              const SizedBox(height: 30),
+
+                              // Save Button
+                              BlocBuilder<AccountSettingsBloc, AccountSettingsState>(
+                                builder: (context, state) {
+                                  return SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: state.status == AccountSettingsStatus.loading
+                                          ? null
+                                          : _saveChanges,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.cyanAccent,
+                                        disabledBackgroundColor: Colors.cyanAccent.withOpacity(0.5),
+                                        padding:
+                                            const EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
                                       ),
+                                      child: state.status == AccountSettingsStatus.loading
+                                          ? const SizedBox(
+                                              height: 20,
+                                              width: 20,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
+                                            )
+                                          : const Text(
+                                              'Save Changes',
+                                              style: TextStyle(
+                                                color: Color(0xFF1B0033),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
                                     ),
                                   );
-                                })
-                                .toList(),
-                          ],
-                        ),
-
-                        const SizedBox(height: 30),
-
-                        // Save Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _saveChanges,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.cyanAccent,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                },
                               ),
-                            ),
-                            child: const Text(
-                              'Save Changes',
-                              style: TextStyle(
-                                color: Color(0xFF1B0033),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
+
+                              const SizedBox(height: 20),
+                            ],
                           ),
                         ),
-
-                        const SizedBox(height: 20),
-                      ],
-                    ),
+                      ),
+                      // Loading overlay
+                      BlocBuilder<AccountSettingsBloc, AccountSettingsState>(
+                        builder: (context, state) {
+                          if (state.status == AccountSettingsStatus.loading) {
+                            return Container(
+                              color: Colors.black.withOpacity(0.3),
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.cyanAccent,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
