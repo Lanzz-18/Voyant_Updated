@@ -46,7 +46,7 @@ app.*.map.json
 
 #Firebase
 firebase/serviceAccountKey.json
-
+functions/firebase/serviceAccountKey.json
 #Environment variable protection
 .env
 .env.local
