@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:voyant/widgets/animated_gradient_background.dart';
 
 class PlayerRecord {
   final String name;
@@ -30,17 +31,8 @@ class LeaderboardScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF2E004E), // Dark Purple
-              Color(0xFF8E24AA), // Purple
-            ],
-          ),
-        ),
+      backgroundColor: Colors.transparent,
+      body: AnimatedGradientBackground(
         child: SafeArea(
           child: Column(
             children: [

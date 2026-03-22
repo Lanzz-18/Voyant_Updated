@@ -4,6 +4,7 @@ import 'package:voyant/screens/home/views/home_tab.dart';
 import 'package:voyant/screens/trips/views/trips_list_screen.dart';
 import 'package:voyant/screens/avatar/views/cosmetic_screen.dart';
 import 'package:voyant/screens/skillTree/skillTree.dart';
+import 'package:voyant/theme/app_background.dart';
 
 class RootScreen extends StatefulWidget {
   const RootScreen({super.key});
@@ -26,7 +27,7 @@ class _RootScreenState extends State<RootScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0F),
+      backgroundColor: AppBackground.scaffold,
       body: screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,

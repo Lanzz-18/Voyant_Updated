@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:ui';
 import 'package:voyant/blocs/avatar_bloc/avatar_bloc.dart';
+import 'package:voyant/widgets/animated_gradient_background.dart';
 
 
 // A placeholder for an inventory item model
@@ -53,13 +54,8 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: const AssetImage('assets/images/2307-w015-n003-1237B-p15-1237 1.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
+      backgroundColor: Colors.transparent,
+      body: AnimatedGradientBackground(
         child: BlocListener<AvatarBloc, AvatarState>(
           listener: (context, state) {
             if (state.status == AvatarStatus.failure) {

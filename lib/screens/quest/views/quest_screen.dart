@@ -414,18 +414,22 @@ class _QuestScreenState extends State<QuestScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Scaffold(
-        backgroundColor: Color(0xFF0A0A0F),
-        body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFB020DD)),
+        backgroundColor: Colors.transparent,
+        body: AnimatedGradientBackground(
+          child: Center(
+            child: CircularProgressIndicator(color: Color(0xFFB020DD)),
+          ),
         ),
       );
     }
 
     if (error != null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF0A0A0F),
-        body: Center(
-          child: Text(error!, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.transparent,
+        body: AnimatedGradientBackground(
+          child: Center(
+            child: Text(error!, style: const TextStyle(color: Colors.white)),
+          ),
         ),
       );
     }
@@ -442,6 +446,7 @@ class _QuestScreenState extends State<QuestScreen> {
     final completedCount = tasks.where((t) => t['isCompleted'] == true).length;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: AnimatedGradientBackground(
         child: SafeArea(
           child: Column(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:voyant/widgets/animated_gradient_background.dart';
 import '../components/settings_tile.dart';
 import 'account_settings_screen.dart';
 import 'notification_settings_screen.dart';
@@ -22,17 +23,8 @@ class SettingsScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF5B0E8C),
-              Color(0xFF1B0033),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+      backgroundColor: Colors.transparent,
+      body: AnimatedGradientBackground(
         child: SafeArea(
           child: Column(
             children: [
