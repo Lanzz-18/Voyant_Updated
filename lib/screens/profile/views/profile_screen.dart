@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:voyant/blocs/authentication_bloc/authentication_bloc.dart';
 import 'package:voyant/components/badge_build.dart';
-import 'package:voyant/components/quest_display_section.dart';
+import 'package:voyant/widgets/animated_gradient_background.dart';
 import '../../referral_system/refer_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -15,26 +15,26 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
-    const bgColor = Color.fromARGB(255, 0, 0, 1);
-    
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: const Color(0xFF12121A),
         elevation: 0,
         title: const Text('User Profile'),
         centerTitle: true,
       ),
-      body: SafeArea( //ensures that padding will be applied to avoid UI from overlaping with device notches or other features 
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const HeadSection(),
-            const SizedBox(height: 24),
-            const Stats(),
-            const SizedBox(height: 24),
-            const ReferralSection(),
-          ],
+      body: AnimatedGradientBackground(
+        child: SafeArea( //ensures that padding will be applied to avoid UI from overlaping with device notches or other features 
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              const HeadSection(),
+              const SizedBox(height: 24),
+              const Stats(),
+              const SizedBox(height: 24),
+              const ReferralSection(),
+            ],
+          ),
         ),
       ),
     );
@@ -112,7 +112,18 @@ class Stats extends StatelessWidget {
         const SizedBox(height: 30),
         const Text("Completed Quests",style: TextStyle(color: Colors.white, fontSize : 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-        const QuestDisplaySection(),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF12121A),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
+          child: const Text(
+            "Quests display",
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+        ),
       ],
     );
   }
