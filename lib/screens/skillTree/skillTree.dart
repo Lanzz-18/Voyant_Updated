@@ -47,7 +47,7 @@ class SkillTreeScreen extends StatefulWidget {
 class _SkillTreeScreenState extends State<SkillTreeScreen>
     with SingleTickerProviderStateMixin {
   // ── API ────────────────────────────────────────────────────
-  static const String baseUrl = 'http://192.168.8.148:3000/api';
+  static const String baseUrl = 'https://api-cbmysz2x4a-uc.a.run.app/api';
 
   // ── State ──────────────────────────────────────────────────
   int _skillPoints = 0;

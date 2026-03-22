@@ -19,7 +19,7 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-  static const String baseUrl = 'http://192.168.8.148:3000/api';
+  static const String baseUrl = 'https://api-cbmysz2x4a-uc.a.run.app/api';
 
   Map<String, dynamic>? stats;
   bool isLoading = true;
@@ -60,6 +60,20 @@ class _HomeTabState extends State<HomeTab> {
   int _getXPForNextLevel(int xp) => 1000 - (xp % 1000);
   double _getLevelProgress(int xp) => (xp % 1000) / 1000;
 
+  String _displayFirstName(Map<String, dynamic>? userData) {
+    final firstName = (userData?['firstName'] as String?)?.trim();
+    if (firstName != null && firstName.isNotEmpty) {
+      return firstName;
+    }
+
+    final username = (userData?['username'] as String?)?.trim();
+    if (username == null || username.isEmpty) {
+      return 'Explorer';
+    }
+
+    return username.split(RegExp(r'\s+')).first;
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -76,7 +90,7 @@ class _HomeTabState extends State<HomeTab> {
                 .snapshots(),
             builder: (context, snapshot) {
               final userData = snapshot.data?.data() as Map<String, dynamic>?;
-              final username = userData?['username'] ?? 'Explorer';
+              final username = _displayFirstName(userData);
               final totalXP = (userData?['totalXP'] ?? 0) as int;
               final level = _getLevel(totalXP);
               final xpToNext = _getXPForNextLevel(totalXP);
