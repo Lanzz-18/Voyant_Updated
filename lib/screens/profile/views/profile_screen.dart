@@ -113,7 +113,18 @@ class Stats extends StatelessWidget {
         const SizedBox(height: 30),
         const Text("Completed Quests",style: TextStyle(color: Colors.white, fontSize : 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-        const QuestDisplaySection(),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF12121A),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
+          child: const Text(
+            "Quests display",
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+        ),
       ],
     );
   }
