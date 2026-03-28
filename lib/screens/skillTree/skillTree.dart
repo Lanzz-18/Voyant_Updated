@@ -390,86 +390,239 @@ class _SkillTreeScreenState extends State<SkillTreeScreen>
   }
 
   void _showInfo(SkillNode node) {
-    final c = _color[node.branch]!;
+    final c          = _color[node.branch]!;
+    final isUnlocked = node.state == NodeState.unlocked;
+    final isLocked   = node.state == NodeState.locked;
+    final canUnlock  = node.state == NodeState.available && _skillPoints >= node.skillPoint;
+
+    final lockReason = node.tier == 2
+        ? 'Unlock $_t2need Tier 1 skills to access'
+        : 'Unlock $_t3need Tier 2 skills to access';
+
     showDialog(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.6),
-      builder: (_) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 48),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFF120A2E),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: c.withValues(alpha: 0.4), width: 1.5),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  color: c.withValues(alpha: 0.15),
-                  border: Border.all(
-                    color: c.withValues(alpha: 0.4),
-                    width: 1.5,
-                  ),
-                ),
-                child: Icon(node.icon, color: c, size: 24),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                node.label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Tier ${node.tier}',
-                style: TextStyle(
-                  color: c,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                node.description,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Color(0xFFB0A8D8),
-                  fontSize: 13,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  width: double.infinity,
-                  height: 42,
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setDialogState) => Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF120A2E),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: c.withValues(alpha: 0.4), width: 1.5),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon
+                Container(
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2D2550),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'Close',
-                    style: TextStyle(
-                      color: Color(0xFFB0A8D8),
-                      fontWeight: FontWeight.w600,
+                    borderRadius: BorderRadius.circular(16),
+                    color: isLocked
+                        ? const Color(0xFF160D2E)
+                        : c.withValues(alpha: 0.15),
+                    border: Border.all(
+                      color: isLocked
+                          ? const Color(0xFF2D2550)
+                          : c.withValues(alpha: 0.4),
+                      width: 1.5,
                     ),
                   ),
+                  child: Icon(
+                    isLocked ? Icons.lock_rounded : node.icon,
+                    color: isLocked ? const Color(0xFF2D2550) : c,
+                    size: 26,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 14),
+                // Name
+                Text(node.label,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800)),
+                const SizedBox(height: 4),
+                // Tier + branch badge
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: c.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: c.withValues(alpha: 0.25)),
+                      ),
+                      child: Text(
+                        'Tier ${node.tier}  ·  ${node.branch[0].toUpperCase()}${node.branch.substring(1)}',
+                        style: TextStyle(
+                            color: c,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.4),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                // Description
+                Text(node.description,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        color: Color(0xFFB0A8D8), fontSize: 13, height: 1.6)),
+                const SizedBox(height: 8),
+                // Lock reason (only when locked)
+                if (isLocked) ...[                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF160D2E),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF2D2550)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.lock_outline_rounded,
+                            color: Color(0xFFB0A8D8), size: 13),
+                        const SizedBox(width: 6),
+                        Text(lockReason,
+                            style: const TextStyle(
+                                color: Color(0xFFB0A8D8), fontSize: 11)),
+                      ],
+                    ),
+                  ),
+                ],
+                // Already unlocked badge
+                if (isUnlocked) ...[                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.check_circle_rounded, color: c, size: 14),
+                      const SizedBox(width: 5),
+                      Text('Already unlocked',
+                          style: TextStyle(
+                              color: c, fontSize: 12, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 20),
+                // Bottom buttons
+                Row(
+                  children: [
+                    // Close button
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2D2550),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text('Close',
+                              style: TextStyle(
+                                  color: Color(0xFFB0A8D8),
+                                  fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                    ),
+                    // Unlock button (only when available)
+                    if (!isUnlocked && !isLocked) ...[                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: GestureDetector(
+                          onTap: canUnlock
+                              ? () async {
+                                  try {
+                                    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+                                    final response = await http.post(
+                                      Uri.parse('$baseUrl/user-skills/${node.id}'),
+                                      headers: {
+                                        'Authorization': 'Bearer $token',
+                                        'Content-Type': 'application/json',
+                                      },
+                                      body: jsonEncode({'skillId': node.id}),
+                                    );
+
+                                    if (response.statusCode == 200 || response.statusCode == 201) {
+                                      final result = jsonDecode(response.body);
+                                      Navigator.of(context).pop();
+                                      setState(() {
+                                        node.state = NodeState.unlocked;
+                                        _skillPoints =
+                                            result['remainingSP'] ?? _skillPoints - node.skillPoint;
+                                        _recalc();
+                                      });
+                                      _snack('${node.label} unlocked!',
+                                          _color[node.branch]!,
+                                          duration: const Duration(seconds: 1));
+                                    } else {
+                                      final result = jsonDecode(response.body);
+                                      _snack(
+                                        result['message'] ?? 'Failed to unlock',
+                                        const Color(0xFF2D2550),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    _snack('Connection error', const Color(0xFF2D2550));
+                                  }
+                                }
+                              : null,
+                          child: Container(
+                            height: 46,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: canUnlock
+                                  ? c
+                                  : const Color(0xFF160D2E),
+                              border: Border.all(
+                                color: canUnlock
+                                    ? c
+                                    : const Color(0xFF2D2550),
+                              ),
+                              boxShadow: canUnlock
+                                  ? [BoxShadow(
+                                      color: c.withValues(alpha: 0.35),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 3))]
+                                  : [],
+                            ),
+                            alignment: Alignment.center,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.stars_rounded,
+                                    color: canUnlock
+                                        ? Colors.white
+                                        : const Color(0xFF2D2550),
+                                    size: 15),
+                                const SizedBox(width: 6),
+                                Text(
+                                  canUnlock ? 'Unlock (${node.skillPoint} SP)' : 'No SP left',
+                                  style: TextStyle(
+                                    color: canUnlock
+                                        ? Colors.white
+                                        : const Color(0xFF2D2550),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
