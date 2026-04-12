@@ -1,18 +1,13 @@
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, ".env") });
 
-console.log('Looking for .env at:', path.resolve(__dirname, ".env"));
 console.log('Environment variables loaded:');
 console.log('MONGO_URI:', process.env.MONGO_URI ? 'SET' : 'NOT SET');
-console.log('PORT:', process.env.PORT ? 'SET' : 'NOT SET');
 
 if (!process.env.MONGO_URI) {
-  throw new Error("MONGO_URI missing. Set it in backend/.env file");
+  throw new Error("MONGO_URI missing. Set it in environment variables");
 }
 
-if (!process.env.PORT) {
-  throw new Error("PORT missing. Set it in backend/.env file or use default 3000");
-}
 // Imports
 require("./firebase/firebaseAdmin");
 
@@ -45,12 +40,18 @@ app.use("/api/user-trips", userTripRoutes);
 app.use("/api/rewards", userRewardRoutes);
 app.use("/api/messages", messageLogRoutes);
 
-async function startApp() {
-  await connectToDatabase();
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  async function startApp() {
+    await connectToDatabase();
 
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  }
+
+  startApp();
 }
 
-startApp();
+// Export for Vercel serverless functions
+module.exports = app;
