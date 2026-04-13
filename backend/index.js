@@ -27,8 +27,34 @@ const messageLogRoutes = require("./routes/messageLogRoutes");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Routes
+// Parse JSON requests FIRST
 app.use(express.json());
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// Database connection state
+let dbConnected = false;
+
+// Middleware to ensure database is connected (applied to API routes only)
+app.use('/api', async (req, res, next) => {
+  if (!dbConnected) {
+    try {
+      console.log('Connecting to database...');
+      await connectToDatabase();
+      dbConnected = true;
+      console.log('Database connected successfully');
+    } catch (error) {
+      console.error('Database connection error:', error);
+      return res.status(500).json({ error: 'Database connection failed', details: error.message });
+    }
+  }
+  next();
+});
+
+// Routes
 app.use("/api/user-account-details", userAccountDetailsRoutes);
 app.use("/api/avatars", avatarRoutes);
 app.use("/api/destinations", destinationRoutes);
@@ -40,10 +66,14 @@ app.use("/api/user-trips", userTripRoutes);
 app.use("/api/rewards", userRewardRoutes);
 app.use("/api/messages", messageLogRoutes);
 
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found', path: req.path });
+});
+
 // For local development
 if (process.env.NODE_ENV !== 'production') {
   async function startApp() {
-    await connectToDatabase();
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
