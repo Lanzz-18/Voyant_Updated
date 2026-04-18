@@ -34,7 +34,7 @@ Your `render.yaml` file in the `backend/` folder will tell Render how to build a
 - **Name:** `voyant-backend`
 - **Branch:** `feature/render-deployment` (or `main` after merge)
 - **Runtime:** Node
-- **Build Command:** `cd backend && npm install`
+- **Build Command:** `cd backend && npm install --production`
 - **Start Command:** `cd backend && npm start`
 
 ### 4. Add Environment Variables

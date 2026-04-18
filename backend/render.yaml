@@ -3,7 +3,7 @@ services:
     name: voyant-backend
     env: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm install --production
     startCommand: npm start
     envVars:
       - key: MONGO_URI

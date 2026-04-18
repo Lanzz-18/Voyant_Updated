@@ -24,7 +24,7 @@ git push origin main
 - **Name**: `voyant-backend`
 - **Environment**: `Node`
 - **Branch**: `main`
-- **Build Command**: `cd backend && npm install`
+- **Build Command**: `cd backend && npm install --production`
 - **Start Command**: `cd backend && npm start`
 
 ### Environment Variables:
