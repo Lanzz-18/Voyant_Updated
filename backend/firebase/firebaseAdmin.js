@@ -1,6 +1,8 @@
 const admin = require("firebase-admin");
 
-// Try to initialize Firebase
+let firebaseInitialized = false;
+
+// Try to initialize Firebase, but don't crash if it fails
 if (!admin.apps.length) {
   try {
     // Try loading from serviceAccountKey.json if it exists locally
@@ -8,31 +10,37 @@ if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
-    console.log("✓ Firebase initialized with serviceAccountKey.json");
+    firebaseInitialized = true;
+    console.log("[FIREBASE] ✓ Initialized with serviceAccountKey.json");
   } catch (err) {
-    // If serviceAccountKey.json doesn't exist, use FIREBASE_CONFIG environment variable
+    // If serviceAccountKey.json doesn't exist, try FIREBASE_CONFIG env var
     if (process.env.FIREBASE_CONFIG) {
       try {
         const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
         admin.initializeApp({
           credential: admin.credential.cert(serviceAccount),
         });
-        console.log("✓ Firebase initialized with FIREBASE_CONFIG environment variable");
+        firebaseInitialized = true;
+        console.log("[FIREBASE] ✓ Initialized with FIREBASE_CONFIG environment variable");
       } catch (parseErr) {
-        console.error("✗ Failed to parse FIREBASE_CONFIG:", parseErr.message);
-        throw new Error("Failed to initialize Firebase. Set FIREBASE_CONFIG environment variable.");
+        console.warn("[FIREBASE] ⚠ FIREBASE_CONFIG is set but invalid JSON");
+        console.warn("[FIREBASE] Error:", parseErr.message);
       }
     } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      // Use Application Default Credentials
-      admin.initializeApp();
-      console.log("✓ Firebase initialized with Application Default Credentials");
+      try {
+        admin.initializeApp();
+        firebaseInitialized = true;
+        console.log("[FIREBASE] ✓ Initialized with Application Default Credentials");
+      } catch (appErr) {
+        console.warn("[FIREBASE] ⚠ Failed to use Application Default Credentials");
+        console.warn("[FIREBASE] Error:", appErr.message);
+      }
     } else {
-      console.error("✗ Firebase credentials not found");
-      throw new Error(
-        "Firebase credentials not found. Set FIREBASE_CONFIG environment variable with your service account key."
-      );
+      console.warn("[FIREBASE] ⚠ Firebase credentials not found - Firebase features will be disabled");
+      console.warn("[FIREBASE] Set FIREBASE_CONFIG environment variable to enable Firebase authentication");
     }
   }
 }
 
 module.exports = admin;
+module.exports.isInitialized = () => firebaseInitialized;

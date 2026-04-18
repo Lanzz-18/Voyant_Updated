@@ -29,15 +29,14 @@ if (!MONGO_URI) {
   process.exit(1);
 }
 
-// Initialize Firebase early and catch any errors
+// Initialize Firebase early (but don't crash if it fails)
 console.log("[STARTUP] Initializing Firebase Admin...");
 try {
   require("./firebase/firebaseAdmin");
-  console.log("[STARTUP] ✓ Firebase Admin initialized successfully");
+  console.log("[STARTUP] ✓ Firebase Admin module loaded");
 } catch (firebaseError) {
-  console.error("[ERROR] Failed to initialize Firebase:", firebaseError.message);
-  console.error("[ERROR] Stack trace:", firebaseError.stack);
-  process.exit(1);
+  console.warn("[STARTUP] ⚠ Firebase initialization issue:", firebaseError.message);
+  console.warn("[STARTUP] ⚠ Continuing without Firebase - authentication may not work");
 }
 
 const express = require("express");
