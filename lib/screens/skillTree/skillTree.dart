@@ -195,6 +195,7 @@ class _SkillTreeScreenState extends State<SkillTreeScreen>
     try {
       // get Firebase token for auth
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      debugPrint('[SKILLS] Firebase token: ${token?.substring(0, 20)}...');
 
       final response = await http.get(
         Uri.parse('$baseUrl/skills'),
@@ -203,29 +204,55 @@ class _SkillTreeScreenState extends State<SkillTreeScreen>
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
+        debugPrint('[SKILLS] Loaded ${data.length} total skills from backend');
 
         // get user's unlocked skills from backend
+        debugPrint('[SKILLS] Fetching unlocked skills from: $baseUrl/user-skills/my-skills');
         final unlockedResponse = await http.get(
           Uri.parse('$baseUrl/user-skills/my-skills'),
           headers: {'Authorization': 'Bearer $token'},
         );
         
+        debugPrint('[SKILLS] Unlocked response status: ${unlockedResponse.statusCode}');
+        debugPrint('[SKILLS] Unlocked response body: ${unlockedResponse.body}');
+        
         Set<String> unlockedIds = {};
         if (unlockedResponse.statusCode == 200) {
           final List<dynamic> unlockedData = jsonDecode(unlockedResponse.body);
+          debugPrint('[SKILLS] Unlocked data list length: ${unlockedData.length}');
+          
+          for (int i = 0; i < unlockedData.length; i++) {
+            final us = unlockedData[i];
+            debugPrint('[SKILLS] Unlocked[$i]: $us');
+          }
+          
           unlockedIds = unlockedData
               .map((us) {
+                debugPrint('[SKILLS] Processing unlocked skill: $us');
+                
                 // Handle both nested object and direct ID formats
                 final skillId = us['skillId'];
+                debugPrint('[SKILLS] skillId field: $skillId (type: ${skillId.runtimeType})');
+                
+                String result;
                 if (skillId is Map) {
-                  return skillId['_id']?.toString() ?? '';
+                  result = skillId['_id']?.toString() ?? '';
+                  debugPrint('[SKILLS] Extracted from nested Map: $result');
+                } else if (skillId is String) {
+                  result = skillId;
+                  debugPrint('[SKILLS] Got direct String: $result');
                 } else {
-                  return skillId?.toString() ?? '';
+                  result = skillId?.toString() ?? '';
+                  debugPrint('[SKILLS] Converted to String: $result');
                 }
+                return result;
               })
               .where((id) => id.isNotEmpty)
               .toSet();
-          debugPrint('[SKILLS] Loaded ${unlockedIds.length} unlocked skills: $unlockedIds');
+          debugPrint('[SKILLS] Final unlocked set: $unlockedIds (${unlockedIds.length} skills)');
+        } else {
+          debugPrint('[SKILLS] ✗ Failed to get unlocked skills: ${unlockedResponse.statusCode}');
+          debugPrint('[SKILLS] Error body: ${unlockedResponse.body}');
         }
 
         final loadedNodes = data.map((skill) {
@@ -237,7 +264,11 @@ class _SkillTreeScreenState extends State<SkillTreeScreen>
               ? NodeState.unlocked
               : (tier == 1 ? NodeState.available : NodeState.locked);
           
-          debugPrint('[SKILL] ${skill['label'] ?? skill['name']}: tier=$tier, unlocked=$isUnlocked, state=$initialState');
+          if (isUnlocked) {
+            debugPrint('[SKILL] ✓ ${skill['label'] ?? skill['name']}: UNLOCKED (id: $skillId)');
+          } else {
+            debugPrint('[SKILL] ✗ ${skill['label'] ?? skill['name']}: tier=$tier, unlocked=$isUnlocked, state=$initialState (id: $skillId)');
+          }
           
           return SkillNode(
             id: skillId,
@@ -258,7 +289,7 @@ class _SkillTreeScreenState extends State<SkillTreeScreen>
         
         // Recalculate only AFTER setting the new nodes
         _recalc();
-        debugPrint('[SKILLS] Loaded ${_nodes.length} total skills');
+        debugPrint('[SKILLS] ✓ Loaded ${_nodes.length} total skills');
       } else {
         setState(() {
           error = 'Failed to load skills: ${response.statusCode}';
