@@ -1,18 +1,13 @@
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, ".env") });
 
-console.log('Looking for .env at:', path.resolve(__dirname, ".env"));
 console.log('Environment variables loaded:');
 console.log('MONGO_URI:', process.env.MONGO_URI ? 'SET' : 'NOT SET');
-console.log('PORT:', process.env.PORT ? 'SET' : 'NOT SET');
 
 if (!process.env.MONGO_URI) {
-  throw new Error("MONGO_URI missing. Set it in backend/.env file");
+  throw new Error("MONGO_URI missing. Set it in environment variables");
 }
 
-if (!process.env.PORT) {
-  throw new Error("PORT missing. Set it in backend/.env file or use default 3000");
-}
 // Imports
 require("./firebase/firebaseAdmin");
 
@@ -32,14 +27,34 @@ const messageLogRoutes = require("./routes/messageLogRoutes");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Routes
+// Parse JSON requests FIRST
 app.use(express.json());
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running' });
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
 });
 
+// Database connection state
+let dbConnected = false;
+
+// Middleware to ensure database is connected (applied to API routes only)
+app.use('/api', async (req, res, next) => {
+  if (!dbConnected) {
+    try {
+      console.log('Connecting to database...');
+      await connectToDatabase();
+      dbConnected = true;
+      console.log('Database connected successfully');
+    } catch (error) {
+      console.error('Database connection error:', error);
+      return res.status(500).json({ error: 'Database connection failed', details: error.message });
+    }
+  }
+  next();
+});
+
+// Routes
 app.use("/api/user-account-details", userAccountDetailsRoutes);
 app.use("/api/avatars", avatarRoutes);
 app.use("/api/destinations", destinationRoutes);
@@ -51,12 +66,22 @@ app.use("/api/user-trips", userTripRoutes);
 app.use("/api/rewards", userRewardRoutes);
 app.use("/api/messages", messageLogRoutes);
 
-async function startApp() {
-  await connectToDatabase();
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found', path: req.path });
+});
 
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  async function startApp() {
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  }
+
+  startApp();
 }
 
-startApp();
+// Export for Vercel serverless functions
+module.exports = app;
