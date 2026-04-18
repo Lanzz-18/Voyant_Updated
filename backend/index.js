@@ -5,6 +5,7 @@ console.log('Looking for .env at:', path.resolve(__dirname, ".env"));
 console.log('Environment variables loaded:');
 console.log('MONGO_URI:', process.env.MONGO_URI ? 'SET' : 'NOT SET');
 console.log('PORT:', process.env.PORT ? 'SET' : 'NOT SET');
+console.log('FIREBASE_CONFIG:', process.env.FIREBASE_CONFIG ? 'SET' : 'NOT SET');
 
 // Set defaults if not provided (for Render and production)
 const MONGO_URI = process.env.MONGO_URI;
@@ -15,8 +16,16 @@ if (!MONGO_URI) {
   console.error("Please set MONGO_URI in Render dashboard environment variables");
   process.exit(1);
 }
-// Imports
-require("./firebase/firebaseAdmin");
+
+// Initialize Firebase early and catch any errors
+console.log("\n[STARTUP] Initializing Firebase Admin...");
+try {
+  require("./firebase/firebaseAdmin");
+  console.log("[STARTUP] Firebase Admin initialized successfully");
+} catch (firebaseError) {
+  console.error("[ERROR] Failed to initialize Firebase:", firebaseError.message);
+  process.exit(1);
+}
 
 const express = require("express");
 const connectToDatabase = require("./db");
