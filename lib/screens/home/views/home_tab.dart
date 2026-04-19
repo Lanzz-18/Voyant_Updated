@@ -19,7 +19,7 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-  static const String baseUrl = 'https://voyant-server.vercel.app//api';
+  static const String baseUrl = 'https://voyant-0f9w.onrender.com/api';
 
   Map<String, dynamic>? stats;
   bool isLoading = true;

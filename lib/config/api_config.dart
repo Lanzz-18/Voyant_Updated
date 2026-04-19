@@ -1,8 +1,9 @@
 class ApiConfig {
-  static const String _baseUrl = 'https://voyant-server.vercel.app/api';
+  // TODO: Update this URL after deploying to Render
+  static const String _baseUrl = 'https://voyant-0f9w.onrender.com/api';
   
   static String get baseUrl {
-    //using emulator url
-    return 'https://voyant-server.vercel.app/api';
+    // Render backend URL - update with your actual Render URL
+    return 'https://voyant-0f9w.onrender.com/api';
   }
 }

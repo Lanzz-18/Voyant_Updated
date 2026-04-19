@@ -13,7 +13,7 @@ class CosmeticScreen extends StatefulWidget {
 }
 
 class _CosmeticScreenState extends State<CosmeticScreen> {
-  static const String baseUrl = 'https://api-cbmysz2x4a-uc.a.run.app/api';
+  static const String baseUrl = 'https://voyant-0f9w.onrender.com/api';
 
   Map<String, dynamic>? avatar;
   List<dynamic> allItems = [];
