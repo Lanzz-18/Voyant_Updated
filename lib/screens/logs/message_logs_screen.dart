@@ -3,10 +3,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:voyant/widgets/animated_gradient_background.dart';
 import '../../../components/info_prompt_popup.dart';
+import 'package:voyant/config/api_config.dart';
 
 class MessageLogsRepository {
-  static const String _baseUrl = 'https://voyant-server.vercel.app/api';
-
   static Future<List<Message>> getUserMessages(
     String userId, {
     int page = 1,
@@ -31,7 +30,7 @@ class MessageLogsRepository {
       }
 
       final uri = Uri.parse(
-        '$_baseUrl/user/$userId',
+        '${ApiConfig.baseUrl}/user/$userId',
       ).replace(queryParameters: queryParams);
 
       final response = await http

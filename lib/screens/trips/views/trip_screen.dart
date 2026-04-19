@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:voyant/screens/quest/views/quest_list_screen.dart';
 import 'package:voyant/widgets/animated_gradient_background.dart';
+import 'package:voyant/config/api_config.dart';
 
 class TripDetailScreen extends StatefulWidget {
   final String tripId;
@@ -19,8 +20,6 @@ class TripDetailScreen extends StatefulWidget {
 }
 
 class _TripDetailScreenState extends State<TripDetailScreen> {
-  static const String baseUrl = 'https://voyant-server.vercel.app/api';
-
   List<dynamic> quests = [];
   bool isLoading = true;
 
@@ -38,7 +37,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
     try {
       await _getToken();
       final response = await http.get(
-        Uri.parse('$baseUrl/quests/trip/${widget.tripId}'),
+        Uri.parse('${ApiConfig.baseUrl}/quests/trip/${widget.tripId}'),
         headers: {'Authorization': '******'},
       );
 

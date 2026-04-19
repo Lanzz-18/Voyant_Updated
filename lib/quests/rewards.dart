@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
+import 'package:voyant/config/api_config.dart';
 
 class Reward {
   //container for reward data
@@ -34,9 +35,6 @@ class Reward {
 }
 
 class RewardRepository {
-  static const String _baseUrl =
-      'https://voyant-server.vercel.app/api'; //will have to re-adjust this for real phones
-
   static Future<void> saveRewardToUser(
     String userId,
     String rewardId,
@@ -46,7 +44,7 @@ class RewardRepository {
     try {
       final response = await http
           .post(
-            Uri.parse('$_baseUrl/rewards/claim'),
+            Uri.parse('${ApiConfig.baseUrl}/rewards/claim'),
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',

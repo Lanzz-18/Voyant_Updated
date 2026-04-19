@@ -18,7 +18,7 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-  static const String baseUrl = 'https://voyant-server.vercel.app/api';
+  static const String _baseUrl = 'https://voyant-server.vercel.app/api';
 
   Map<String, dynamic>? stats;
   bool isLoading = true;
@@ -37,7 +37,7 @@ class _HomeTabState extends State<HomeTab> {
     try {
       final token = await _getToken();
       final response = await http.get(
-        Uri.parse('${baseUrl}/stats/home'),
+        Uri.parse('${_baseUrl}/stats/home'),
         headers: {'Authorization': 'Bearer $token'},
       );
       if (response.statusCode == 200) {
