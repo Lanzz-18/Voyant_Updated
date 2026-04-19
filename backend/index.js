@@ -30,12 +30,13 @@ console.log("[STARTUP] ✓ Database module loaded");
 
 // Load all routes with error handling
 console.log("[STARTUP] Loading routes...");
-let avatarRoutes, destinationRoutes, questRoutes, skillRoutes,
+let avatarRoutes, cosmeticsRoutes, destinationRoutes, questRoutes, skillRoutes,
     userAccountDetailsRoutes, userGroupRoutes, userSkillRoutes,
     userTripRoutes, userRewardRoutes, messageLogRoutes;
 
 try {
   avatarRoutes = require("./routes/avatarRoutes");
+  cosmeticsRoutes = require("./routes/cosmeticsRoutes");
   destinationRoutes = require("./routes/destinationRoutes");
   questRoutes = require("./routes/questRoutes");
   skillRoutes = require("./routes/skillRoutes");
@@ -84,6 +85,7 @@ app.use('/api', async (req, res, next) => {
 // Routes
 app.use("/api/user-account-details", userAccountDetailsRoutes);
 app.use("/api/avatars", avatarRoutes);
+app.use("/api/cosmetics", cosmeticsRoutes);
 app.use("/api/destinations", destinationRoutes);
 app.use("/api/quests", questRoutes);
 app.use("/api/skills", skillRoutes);
