@@ -61,7 +61,8 @@ class _CosmeticScreenState extends State<CosmeticScreen> {
           });
         } else {
           debugPrint(
-              'Failed to load cosmetics data: ${avatarRes.statusCode}, ${itemsRes.statusCode}');
+            'Failed to load cosmetics data: ${avatarRes.statusCode}, ${itemsRes.statusCode}',
+          );
         }
       }
     } catch (e) {
